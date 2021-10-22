@@ -1,12 +1,21 @@
 #!/bin/bash
 
 function print_help() {
-  echo -e "Usage: "
-  echo -e "\t $0 INTF_LIST P4_PROGRAM"
-  echo -e "\t $0 --help"
-  echo -e "Example: "
-  echo -e "\t $0 ens1f0,ens1f1 testdata/l2fwd.p4"
-  echo -e "\nWill configure eBPF environment, compile P4 program, run and report CPU profiling and usage statistics."
+  # Display Help
+  echo "Run benchmark tests for PSA-eBPF."
+  echo "The script will configure and deploy the PSA-eBPF setup for benchmarking."
+  echo
+  echo "Syntax: $0 [OPTIONS] [PROGRAM]"
+  echo ""
+  echo "Example: $0 -p ens1f0,ens1f1 -c commands.txt testdata/l2fwd.p4"
+  echo ""
+  echo "OPTIONS:"
+  echo "-p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)"
+  echo "-c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps."
+  echo "--help             Print this message."
+  echo ""
+  echo "PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)"
+  echo
 }
 
 if [ "x$1" = "x--help" ]; then
@@ -21,7 +30,6 @@ function exit_on_error() {
       fi
 }
 
-
 function cleanup() {
     ip link del psa_recirc
     for intf in ${INTERFACES//,/ } ; do
@@ -33,16 +41,35 @@ function cleanup() {
     rm -rf /sys/fs/bpf/*
 }
 
-if (( $# != 2 )); then
-    >&2 echo -e "Illegal number of arguments! \n"
-    print_help
-    exit 1
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    -p|--port-list)
+      INTERFACES="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -c|--cmd)
+      COMMANDS_FILE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    *)    # unknown option
+      POSITIONAL+=("$1") # save it in an array for later
+      shift # past argument
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+if [[ -n $1 ]]; then
+    PROGRAM="$1"
 fi
 
-declare -a INTERFACES=$1
-
 cleanup
-#trap cleanup EXIT
 
 ip link add name psa_recirc type dummy
 ip link set dev psa_recirc up
@@ -103,10 +130,10 @@ for intf in ${INTERFACES//,/ } ; do
   bash scripts/set_irq_affinity.sh 2 "$intf"
 done
 
-echo "Installing table entries.. Looking for $2/commands.txt"
-if [ -n "$2/commands.txt" ]; then
-   cat $2/commands.txt
-   bash $2/commands.txt
+echo "Installing table entries.. Looking for $COMMANDS_FILE"
+if [ -n "$COMMANDS_FILE" ]; then
+   cat $COMMANDS_FILE
+   bash $COMMANDS_FILE
    echo "Table entries successfully installed!"
 else
    echo "File with table entries not provided"

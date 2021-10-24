@@ -12,6 +12,7 @@ function print_help() {
   echo "OPTIONS:"
   echo "-p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)"
   echo "-c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps."
+  echo "-C|--core          CPU core that will be pinned to interfaces."
   echo "--help             Print this message."
   echo ""
   echo "PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)"
@@ -48,6 +49,11 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -p|--port-list)
       INTERFACES="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -C|--core)
+      CORE="$2"
       shift # past argument
       shift # past value
       ;;
@@ -126,7 +132,7 @@ for intf in ${INTERFACES//,/ } ; do
   psabpf-ctl pipeline add-port id 99 "$intf"
 
   # by default, pin IRQ to 3rd CPU core
-  bash scripts/set_irq_affinity.sh 2 "$intf"
+  bash scripts/set_irq_affinity.sh $CORE "$intf"
 done
 
 echo "Installing table entries.. Looking for $COMMANDS_FILE"

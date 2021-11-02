@@ -1,5 +1,0 @@
-psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key 00:11:0a:69:e6:00 0 data 16
-psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key 00:11:0a:69:e6:01 0 data 17
-
-psabpf-ctl table add pipe 99 ingress_tbl_mac_learning  id 0 key 00:11:0a:69:e6:00
-psabpf-ctl table add pipe 99 ingress_tbl_mac_learning  id 0 key 00:11:0a:69:e6:01

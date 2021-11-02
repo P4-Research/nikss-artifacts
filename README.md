@@ -28,11 +28,13 @@ TBD by Frederic
 
 ## Steps to reproduce tests
 
-We use `setup_test.sh` script to automatically deploy test configurations. Before running the script export the `P4C_REPO` variable, which is used by `setup_test.sh`
-to find P4C repository.
+We use `setup_test.sh` script to automatically deploy test configurations. 
+
+Before running the script you should prepare the environment file based on the template provided under `env/` directory.
+Then, export all variables by using (remember to pass your env file):
 
 ```
-$ export P4C_REPO=<path-to-p4c-ebpf-psa-root-directory>
+$ set -a && source env/pllab.env
 ``` 
 
 The basic usage of `setup_test.sh` is as follows:

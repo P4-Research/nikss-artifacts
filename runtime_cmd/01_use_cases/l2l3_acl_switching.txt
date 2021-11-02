@@ -1,0 +1,5 @@
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC0 0 data $PORT0_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC1 0 data $PORT1_INDEX
+
+psabpf-ctl table add pipe 99 ingress_tbl_mac_learning  id 0 key $GENERATOR_MAC0
+psabpf-ctl table add pipe 99 ingress_tbl_mac_learning  id 0 key $GENERATOR_MAC1

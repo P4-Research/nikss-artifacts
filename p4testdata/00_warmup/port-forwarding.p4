@@ -1,41 +1,17 @@
 #include <core.p4>
 #include "psa.p4"
 
-typedef bit<48>  EthernetAddress;
-
-header ethernet_t {
-    EthernetAddress dstAddr;
-    EthernetAddress srcAddr;
-    bit<16>         etherType;
-}
-
-header ipv4_t {
-    bit<4>  version;
-    bit<4>  ihl;
-    bit<8>  diffserv;
-    bit<16> totalLen;
-    bit<16> identification;
-    bit<3>  flags;
-    bit<13> fragOffset;
-    bit<8>  ttl;
-    bit<8>  protocol;
-    bit<16> hdrChecksum;
-    bit<32> srcAddr;
-    bit<32> dstAddr;
-}
-
 struct fwd_metadata_t {
 }
 
 struct empty_t {}
 
-struct metadata {
-    fwd_metadata_t fwd_metadata;
+struct headers {
+
 }
 
-struct headers {
-    ethernet_t       ethernet;
-    ipv4_t           ipv4;
+struct metadata {
+    fwd_metadata_t fwd_metadata;
 }
 
 
@@ -47,7 +23,6 @@ parser IngressParserImpl(packet_in buffer,
                          in empty_t recirculate_meta)
 {
     state start {
-        buffer.extract(parsed_hdr.ethernet); 
         transition accept;
     }
 }
@@ -78,7 +53,7 @@ control ingress(inout headers hdr,
 
     table tbl_fwd {
         key = {
-            hdr.ethernet.dstAddr : exact;
+            istd.ingress_port : exact;
         }
         actions = { do_forward; NoAction; }
         size = 100;
@@ -101,7 +76,6 @@ control CommonDeparserImpl(packet_out packet,
                            inout headers hdr)
 {
     apply {
-        packet.emit(hdr.ethernet);
     }
 }
 

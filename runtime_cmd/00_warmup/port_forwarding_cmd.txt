@@ -1,0 +1,2 @@
+psabpf-ctl table add pipe 99 ingress_tbl_fwd id 1 key $PORT0_INDEX data $PORT1_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_fwd id 1 key $PORT1_INDEX data $PORT0_INDEX

@@ -1,7 +1,6 @@
 #include <linux/bpf.h>
 #include <bpf/bpf_helpers.h>
 #include <linux/if_ether.h>
-#include <linux/pkt_cls.h>
 
 struct {
 	__uint(type, BPF_MAP_TYPE_DEVMAP);
@@ -34,7 +33,6 @@ int xdp_func(struct xdp_md *ctx)
     if (!out_port) {
         return XDP_DROP;
     }
-
     return bpf_redirect_map(&tx_port, *out_port, 0);
 }
 

@@ -1,0 +1,3 @@
+bpftool map update name tx_port key $PORT1_INDEX 00 00 00 value $PORT1_INDEX 00 00 00
+bpftool map update name l2fwd key 01 00 00 00 00 00 value $PORT1_INDEX 00 00 00 
+bpftool map update name l2fwd key 00 00 00 00 00 01 value $PORT1_INDEX 00 00 00

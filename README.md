@@ -18,7 +18,7 @@ Steps to follow to prepare the DUT machine.
 
 ### Hardware settings & OS configuration
 
-In order to make tests as stable and reproducible as possible and to minimize interference from system activity, the following configuration was done. Note that the same configuration is used for both PSA-eBPF in-kernel tests and P4-dpdk userspace tests.
+In order to make tests as stable and reproducible as possible and to minimize interference from system activity, the following configuration was done. Note that the same configuration is used for both PSA-eBPF in-kernel tests and P4-dpdk userspace tests. All our tests we done with DUT kernel version v5.11.3.
 -  Disable HyperThreading
 -  Disable Turbo Boost, either from UEFI/BIOS or as follows (assuming `intel_pstate` is enabled):
 ```
@@ -30,10 +30,6 @@ for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 do
 	echo performance > $i
 done
-```
--  Disable “retpoline” mitigation for Meltdown/Spectre by adding the following option to the kernel boot parameters:
-```
-spectre_v2=off nopti
 ```
 -  Stop the irqbalance service so that irq affinities can be set:
 ```
@@ -47,12 +43,10 @@ isolcpus=1-31 rcu_nocbs=1-31 nohz_full=1-31
 ```
 default_hugepagesz=1G hugepagesz=1G hugepages=32 transparent_hugepage=never
 ```
--  Disable Ethernet flow-control on the NIC ports. For example if the NIC ports are named `ens3f0` and `ens3f0`:
+- When assigning CPU cores to BPF or DPDK programs, avoid cross-NUMA traffic by selecting CPU cores that belong to the NUMA node where the NIC is located. For example, the NUMA node of NIC port `ens3f0` can be retrieved as follows:
 ```
-ethtool -A ens3f0 rx off tx off
-ethtool -A ens3f1  rx off tx off
+cat /sys/class/net/ens3f0/device/numa_node
 ```
-When assigning CPU cores to BPF or DPDK programs, avoid cross-NUMA traffic by selecting CPU cores that belong to the NUMA node where the NIC is located.
 
 ### Build p4c-ebpf-psa
 

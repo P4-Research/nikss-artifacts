@@ -26,9 +26,9 @@ TBD by Frederic
 
 ### Build OVS
 
-Install OVS from source
+Install OVS from source.
 
-Clone Git repository
+Clone Git repository:
 
 ```
 $ git clone https://github.com/openvswitch/ovs.git
@@ -36,15 +36,13 @@ $ cd ovs
 $ git checkout v2.16.0
 ```
 
-Bootstrapping
+Bootstrapping:
 
 ```
-$ cd ovs
 $ ./boot.sh
 $ ./configure
 $ make
 $ make install
-
 ```
 
 ## Steps to reproduce tests

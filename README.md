@@ -36,7 +36,7 @@ $ git checkout v2.16.0
 $ git checkout origin/branch-2.16
 ```
 
--Bootstrapping
+- Bootstrapping
 
 ```
 $ cd ovs
@@ -44,6 +44,7 @@ $ ./boot.sh
 $ ./configure
 $ make
 $ make install
+```
 
 - Check names of interfaces to be added to OVS
 

@@ -18,7 +18,35 @@ Steps to follow to prepare the DUT machine.
 
 ### Hardware settings & OS configuration
 
-TBD by Frederic
+In order to make tests as stable and reproducible as possible and to minimize interference from system activity, the following configuration was done. Note that the same configuration is used for both PSA-eBPF in-kernel tests and P4-dpdk userspace tests. All our tests we done with DUT kernel version v5.11.3.
+-  Disable HyperThreading
+-  Disable Turbo Boost, either from UEFI/BIOS or as follows (assuming `intel_pstate` is enabled):
+```
+echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
+```
+-  Set the CPU governor to *performance mode* so that all CPU cores run at the highest frequency possible:
+```
+for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+do
+	echo performance > $i
+done
+```
+-  Stop the irqbalance service so that irq affinities can be set:
+```
+killall irqbalance
+```
+-  Use `isolcpu`, `rcu_ncbs` and `nohz_full` kernel boot-command-line parameters to isolate CPU cores that will be assigned to BPF or DPDK programs from system activity and kernel noise. For example, with a server with 32 physical CPU cores, the following configuration will leave only CPU core 0 for system activity and all other CPU cores for test programs:
+```
+isolcpus=1-31 rcu_nocbs=1-31 nohz_full=1-31
+```
+-  Allocate huge pages at boot time and disable transparent huge pages with the following  kernel boot parameters (e.g. 32 1GB huge pages):
+```
+default_hugepagesz=1G hugepagesz=1G hugepages=32 transparent_hugepage=never
+```
+- When assigning CPU cores to BPF or DPDK programs, avoid cross-NUMA traffic by selecting CPU cores that belong to the NUMA node where the NIC is located. For example, the NUMA node of NIC port `ens3f0` can be retrieved as follows:
+```
+cat /sys/class/net/ens3f0/device/numa_node
+```
 
 ### Build p4c-ebpf-psa
 

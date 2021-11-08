@@ -33,10 +33,9 @@ Install OVS from source
 ```
 $ git clone https://github.com/openvswitch/ovs.git
 $ git checkout v2.16.0
-$ git checkout origin/branch-2.16
 ```
 
--Bootstrapping
+- Bootstrapping
 
 ```
 $ cd ovs
@@ -44,24 +43,6 @@ $ ./boot.sh
 $ ./configure
 $ make
 $ make install
-
-- Check names of interfaces to be added to OVS
-
-```
-$ ip link
-```
-
-- Create a new bridge named br0 and add port eth0
-
-```
-$ ovs-vsctl add-br br0
-$ ovs-vsctl add-port br0 eth0
-```
-
-- List all of the ports within a bridge br0
-
-```
-$ ovs-vsctl list-ports br0
 ```
 
 ## Steps to reproduce tests

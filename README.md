@@ -32,6 +32,7 @@ Clone Git repository
 
 ```
 $ git clone https://github.com/openvswitch/ovs.git
+$ cd ovs
 $ git checkout v2.16.0
 ```
 
@@ -43,6 +44,7 @@ $ ./boot.sh
 $ ./configure
 $ make
 $ make install
+
 ```
 
 ## Steps to reproduce tests

@@ -26,11 +26,24 @@ TBD by Frederic
 
 ### Build OVS
 
-- Install OVS
+Install OVS from source
+
+- Clone Git repository
 
 ```
-$ sudo apt-get install openvswitch-switch
+$ git clone https://github.com/openvswitch/ovs.git
+$ git checkout v2.16.0
+$ git checkout origin/branch-2.16
 ```
+
+-Bootstrapping
+
+```
+$ cd ovs
+$ ./boot.sh
+$ ./configure
+$ make
+$ make install
 
 - Check names of interfaces to be added to OVS
 

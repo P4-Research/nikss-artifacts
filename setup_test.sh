@@ -12,6 +12,7 @@ function print_help() {
   echo "OPTIONS:"
   echo "-p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)"
   echo "-c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps."
+  echo "-q|--queues        Set number of RX/TX queues per NIC (default 1)."
   echo "-C|--core          CPU core that will be pinned to interfaces."
   echo "--help             Print this message."
   echo ""
@@ -42,6 +43,8 @@ function cleanup() {
     rm -rf /sys/fs/bpf/*
 }
 
+NUM_QUEUES=1
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -54,6 +57,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -C|--core)
       CORE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -q|--queues)
+      NUM_QUEUES="$2"
       shift # past argument
       shift # past value
       ;;
@@ -114,7 +122,7 @@ for intf in ${INTERFACES//,/ } ; do
   sysctl -w net.ipv6.conf."$intf".accept_ra=0
 
   ifconfig "$intf" promisc
-  ethtool -L "$intf" combined 1
+  ethtool -L "$intf" combined $NUM_QUEUES
   ethtool -G "$intf" tx 4096
   ethtool -G "$intf" rx 4096
   ethtool -K "$intf" txvlan off

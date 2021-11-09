@@ -61,3 +61,11 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 ### 01. Sample test 1
 
 ### 02. Sample test 2
+
+### 07. Multi-queue scaling
+
+Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
+
+```
+$ sudo -E ./setup_test.sh -q 2 -C 6-10 -p ,ens4f1 -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+``` 

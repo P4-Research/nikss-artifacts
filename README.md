@@ -48,30 +48,25 @@ default_hugepagesz=1G hugepagesz=1G hugepages=32 transparent_hugepage=never
 cat /sys/class/net/ens3f0/device/numa_node
 ```
 
-### Build p4c-ebpf-psa
+### Build PSA-eBPF
+
+Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf-psa) repository to install PSA-eBPF on DUT machine. 
 
 ### Build P4-DPDK
 
 ### Build OVS
 
-Install OVS from source.
-
-Clone Git repository:
-
 ```
 $ git clone https://github.com/openvswitch/ovs.git
 $ cd ovs
 $ git checkout v2.16.0
-```
-
-Bootstrapping:
-
-```
 $ ./boot.sh
 $ ./configure
 $ make
 $ make install
 ```
+
+In the case of any problems, please refer to the [official Open vSwitch installation guide](https://docs.openvswitch.org/en/latest/intro/install/index.html). 
 
 ## Steps to reproduce tests
 
@@ -114,5 +109,5 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
 
 ```
-$ sudo -E ./setup_test.sh -q 2 -C 6-10 -p ,ens4f1 -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+$ sudo -E ./setup_test.sh --queues 2 -C 6-11,18-23 -p ens4f0,ens4f1 -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ``` 

@@ -54,6 +54,8 @@ Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf
 
 ### Build P4-DPDK
 
+### Build BMv2
+
 ### Build OVS
 
 ```
@@ -100,9 +102,17 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 
 ```
 
-### 01. Sample test 1
+### 01. Packet forwarding rate
 
-### 02. Sample test 2
+### 02. End-to-end performance
+
+### 03. Microbenchmarking: the cost of PSA externs
+
+### 04. Microbenchmarking: P4 Table lookup time
+
+### 05. Comparison with other host-based P4 platforms
+
+### 06. Comparison with other software switches
 
 ### 07. Multi-queue scaling
 

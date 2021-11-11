@@ -25,7 +25,7 @@ In order to make Netperf traffic traverse the DUT machine, we have to set up the
 local host. Use the following script to automatically setup Linux namespaces:
 
 ```
-$ ./scripts/setup_netperf.sh
+$ sudo ./scripts/setup_netperf.sh
 ```
 
 Then, to run Netperf test:

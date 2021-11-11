@@ -14,7 +14,21 @@ Steps to follow to prepare the generator machine.
 
 ### Run netperf
 
-Example:
+Before using netperf, make sure that all interfaces are managed by Linux driver back:
+
+```
+$ cd trex/v2.92/
+$ sudo ./dpdk_setup_ports.py -L
+```
+
+In order to make Netperf traffic traverse the DUT machine, we have to set up the Linux namespaces, so that packets will leave
+local host. Use the following script to automatically setup Linux namespaces:
+
+```
+$ ./scripts/setup_netperf.sh
+```
+
+Then, to run Netperf test:
 
 ```
 sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency

@@ -1,0 +1,2 @@
+psabpf-ctl table add pipe 99 ingress_ap id 1 key 10 data $PORT1_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_fwd ref key $GENERATOR_MAC1 data 10

@@ -12,6 +12,7 @@ function print_help() {
   echo "OPTIONS:"
   echo "-p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)"
   echo "-c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps."
+  echo "-q|--queues        Set number of RX/TX queues per NIC (default 1)."
   echo "-C|--core          CPU core that will be pinned to interfaces."
   echo "--help             Print this message."
   echo ""
@@ -42,6 +43,8 @@ function cleanup() {
     rm -rf /sys/fs/bpf/*
 }
 
+NUM_QUEUES=1
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -54,6 +57,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -C|--core)
       CORE="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -q|--queues)
+      NUM_QUEUES="$2"
       shift # past argument
       shift # past value
       ;;
@@ -97,16 +105,14 @@ if [[ $PROGRAM == *.p4 ]]; then
   exit_on_error
   psabpf-ctl pipeline load id 99 out.o
   exit_on_error
-else
-  declare -a CFILE=$(find "$2" -maxdepth 1 -type f -name "*.c")
-  if [ -z "$CFILE" ]; then
-    echo "Neither P4 nor C file found under path $2"
-    exit 1
-  fi
-  echo "Found C file: $CFILE"
-  make -f $P4C_REPO/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$CFILE
+elif [[ $PROGRAM == *.c ]]; then
+  echo "Found C file: $PROGRAM"
+  make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
   bpftool prog loadall out.o /sys/fs/bpf/prog
   exit_on_error
+else
+  echo "Unsupported program provided!"
+  exit 0
 fi
 
 for intf in ${INTERFACES//,/ } ; do
@@ -116,11 +122,18 @@ for intf in ${INTERFACES//,/ } ; do
   sysctl -w net.ipv6.conf."$intf".accept_ra=0
 
   ifconfig "$intf" promisc
-  ethtool -L "$intf" combined 1
+  ethtool -L "$intf" combined $NUM_QUEUES
   ethtool -G "$intf" tx 4096
   ethtool -G "$intf" rx 4096
   ethtool -K "$intf" txvlan off
   ethtool -K "$intf" rxvlan off
+  ethtool -A "$intf" rx off tx off
+
+  if [[ $PROGRAM == *.p4 ]]; then
+      psabpf-ctl pipeline add-port id 99 "$intf"
+  else
+      bpftool net attach xdp pinned /sys/fs/bpf/prog/xdp_xdp-ingress dev "$intf" overwrite
+  fi
 
   # TODO: these commands are used if an eBPF program written in C is being tested.
   #  We should refactor this script.
@@ -128,8 +141,6 @@ for intf in ${INTERFACES//,/ } ; do
   #tc qdisc add dev "$intf" clsact
   #tc filter add dev "$intf" ingress bpf da fd /sys/fs/bpf/prog/classifier_tc-ingress
   #tc filter add dev "$intf" egress bpf da fd /sys/fs/bpf/prog/classifier_tc-egress
-
-  psabpf-ctl pipeline add-port id 99 "$intf"
 
   # by default, pin IRQ to 3rd CPU core
   bash scripts/set_irq_affinity.sh $CORE "$intf"

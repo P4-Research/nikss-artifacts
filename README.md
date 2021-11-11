@@ -12,6 +12,14 @@ Steps to follow to prepare the generator machine.
 
 ### Configure TRex
 
+### Run netperf
+
+Example:
+
+```
+sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
+```
+
 ## DUT machine
 
 Steps to follow to prepare the DUT machine. 

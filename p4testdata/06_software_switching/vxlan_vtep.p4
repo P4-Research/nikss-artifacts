@@ -45,6 +45,8 @@ struct headers_t {
     udp_t udp;
     vxlan_t vxlan;
     ethernet_t inner_ethernet;
+    ipv4_t inner_ipv4;
+    udp_t inner_udp;
 }
 
 struct local_metadata_t {
@@ -81,7 +83,20 @@ parser packet_parser(packet_in packet, out headers_t headers, inout local_metada
     state parse_inner_ethernet {
         packet.extract(headers.inner_ethernet);
         local_metadata.eth_dst = headers.inner_ethernet.dst_addr;
-	transition accept;
+	transition parse_inner_ipv4;
+    }
+
+    state parse_inner_ipv4 {
+        packet.extract(headers.inner_ipv4);
+        transition select(headers.ipv4.protocol) {
+           17: parse_inner_udp;
+           default: accept;
+        }
+    }
+
+    state parse_inner_udp {
+        packet.extract(headers.inner_udp);
+        transition accept;
     }
 
 }
@@ -93,13 +108,15 @@ control packet_deparser(packet_out packet, out empty_metadata_t clone_i2e_meta, 
         packet.emit(headers.udp);
         packet.emit(headers.vxlan);
         packet.emit(headers.inner_ethernet);
+        packet.emit(headers.inner_ipv4);
+        packet.emit(headers.inner_udp);
     }
 }
 
 control ingress(inout headers_t headers, inout local_metadata_t local_metadata, in psa_ingress_input_metadata_t standard_metadata,
                 inout psa_ingress_output_metadata_t ostd) {
 
-    action vxlan_decap(PortId_t port_out) {
+    action vxlan_decap() {
         headers.ethernet.setInvalid();
         headers.ipv4.setInvalid();
         headers.udp.setInvalid();
@@ -111,29 +128,29 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
             bit<48> ethernet_dst_addr,
             bit<32> ipv4_src_addr,
             bit<32> ipv4_dst_addr,
-            bit<24> vxlan_vni,
+            bit<24> vxlan_vni
         ) {
-            headers.inner_ethernet = header.ethernet;
+            headers.inner_ethernet = headers.ethernet;
             headers.ethernet.src_addr = ethernet_src_addr;
             headers.ethernet.dst_addr = ethernet_dst_addr;
 
             headers.ethernet.ether_type = 0x0800;
 
-            headers.ipv4.setValid();
+            headers.inner_ipv4 = headers.ipv4;
             headers.ipv4.ver_ihl = 0x45;
             headers.ipv4.diffserv = 0x0;
             headers.ipv4.total_len = headers.ipv4.total_len + 14 + 20 + 8 + 8;
             headers.ipv4.identification = 0x1513; /* From NGIC */
-            headers.outer_ipv4.flags_offset = 0x0;
-            headers.outer_ipv4.ttl = 64;
-            headers.outer_ipv4.protocol = 17;
-            headers.outer_ipv4.src_addr = ipv4_src_addr;
-            headers.outer_ipv4.dst_addr = ipv4_dst_addr;
+            headers.ipv4.flags_offset = 0x0;
+            headers.ipv4.ttl = 64;
+            headers.ipv4.protocol = 17;
+            headers.ipv4.src_addr = ipv4_src_addr;
+            headers.ipv4.dst_addr = ipv4_dst_addr;
 
-            headers.outer_udp.setValid();
-            headers.outer_udp.src_port = 15221; // random port
-            headers.outer_udp.dst_port = 4789;
-            headers.outer_udp.length = headers.ipv4.total_len + (8 + 8 + 14);
+            headers.inner_udp = headers.udp;
+            headers.udp.src_port = 15221; // random port
+            headers.udp.dst_port = 4789;
+            headers.udp.length = headers.ipv4.total_len + (8 + 8 + 14);
 
             headers.vxlan.setValid();
             headers.vxlan.flags = 0;
@@ -144,16 +161,17 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
 
     table vteps {
         key = {
-            local_metadata.port : exact;
+            ostd.egress_port : exact;
         }
         actions = {
-            vxlan_decap;
+            vxlan_encap;
         }
     }
 
     action forward(bit<32> port_out) {
 	ostd.drop = false;
         ostd.egress_port = (PortId_t)port_out;
+        
     }
 
     table fwd {
@@ -167,12 +185,11 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
 
     apply {
         if (headers.vxlan.isValid()) {
-            local_metadata.port = standard_metadata.ingress_port;    
-        } else {
-	    local_metadata.port = standard_metadata.egress_port;
+            // strip VXLAN out if exists
+            vxlan_decap();
         }
-        vteps.apply();
         fwd.apply();
+	vteps.apply();
     }
 }
 

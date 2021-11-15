@@ -128,7 +128,8 @@ control IngressDeparserImpl(packet_out buffer,
 
     CommonDeparserImpl() cp;
     apply {
-        ck.set_state(hdr.ipv4.hdrChecksum);
+        ck.clear();
+        ck.subtract(hdr.ipv4.hdrChecksum);
         ck.subtract({/* 16-bit word 4 */    hdr.ipv4.ttl, hdr.ipv4.protocol});
         ck.add({/* 16-bit word 4 */    hdr.ipv4.ttl, hdr.ipv4.protocol});
         hdr.ipv4.hdrChecksum = ck.get();

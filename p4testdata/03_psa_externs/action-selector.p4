@@ -93,7 +93,6 @@ control ingress(inout headers hdr,
             hdr.ethernet.dstAddr : selector;
         }
         actions = { do_forward; NoAction; }
-        size = 100;
         psa_implementation = as;
     }
 

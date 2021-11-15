@@ -1,0 +1,3 @@
+psabpf-ctl table add pipe 99 ingress_tbl_fwd id 1 key $GENERATOR_MAC1 data $PORT1_INDEX
+
+psabpf-ctl meter update pipe 99 ingress_mtr index 1 1250000:6250 1250000:6250 

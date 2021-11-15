@@ -86,6 +86,7 @@ control ingress(inout headers hdr,
 
     action do_forward(PortId_t egress_port) {
         send_to_port(ostd, egress_port);
+        hdr.ipv4.srcAddr = hasher.get_hash(hdr.ethernet.srcAddr);
     }
 
     table tbl_fwd {
@@ -98,7 +99,6 @@ control ingress(inout headers hdr,
 
     apply {
          tbl_fwd.apply();
-         hdr.ipv4.srcAddr = hasher.get_hash(hdr.ethernet.srcAddr);
     }
 }
 

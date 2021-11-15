@@ -86,6 +86,7 @@ control ingress(inout headers hdr,
 
     action do_forward(PortId_t egress_port) {
         send_to_port(ostd, egress_port);
+        mtr.execute(1);
     }
 
     table tbl_fwd {
@@ -98,7 +99,6 @@ control ingress(inout headers hdr,
 
     apply {
          tbl_fwd.apply();
-         mtr.execute(1);
          // do not drop packets
     }
 }

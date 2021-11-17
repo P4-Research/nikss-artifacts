@@ -33,6 +33,7 @@ function exit_on_error() {
 }
 
 function cleanup() {
+    bash $OVS_REPO/utilities/ovs-ctl stop
     ip link del psa_recirc
     for intf in ${INTERFACES//,/ } ; do
         ip link set dev "$intf" xdp off
@@ -95,24 +96,23 @@ declare -a RECIRC_PORT_ID=$(ip -o link | awk '$2 == "psa_recirc:" {print $1}' | 
 # Trace all command from this point
 #set -x
 
-echo "Compiling data plane program.."
 declare -a ARGS="-DPSA_PORT_RECIRCULATE=$RECIRC_PORT_ID"
 
 if [[ $PROGRAM == *.p4 ]]; then
-  echo "Found P4 program: $PROGRAM"
+  echo "Compiling data plane program.. $PROGRAM"
   make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o \
       P4FILE=$PROGRAM ARGS="$ARGS" P4ARGS="$P4ARGS" psa
   exit_on_error
   psabpf-ctl pipeline load id 99 out.o
   exit_on_error
 elif [[ $PROGRAM == *.c ]]; then
-  echo "Found C file: $PROGRAM"
+  echo "Compiling data plane program.. $PROGRAM"
   make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
   bpftool prog loadall out.o /sys/fs/bpf/prog
   exit_on_error
-else
-  echo "Unsupported program provided!"
-  exit 0
+elif [[ $PROGRAM == "openvswitch" ]]; then
+  echo "Running Open vSwitch.."
+  bash $OVS_REPO/utilities/ovs-ctl start
 fi
 
 for intf in ${INTERFACES//,/ } ; do
@@ -131,7 +131,7 @@ for intf in ${INTERFACES//,/ } ; do
 
   if [[ $PROGRAM == *.p4 ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
-  else
+  elif [[ $PROGRAM == *.c ]]; then
       bpftool net attach xdp pinned /sys/fs/bpf/prog/xdp_xdp-ingress dev "$intf" overwrite
   fi
 
@@ -160,6 +160,11 @@ echo -e "\n\nDumping network configuration:"
 for intf in ${INTERFACES//,/ } ; do
   ip link show "$intf"
 done
+
+if [[ $PROGRAM == "openvswitch" ]]; then
+    # no need to proceed further
+    exit 0
+fi
 
 echo -e "\n\nDumping BPF setup:"
 bpftool net show

@@ -148,6 +148,30 @@ On Generator machine run the NDR script and tune `size=` parameter accordingly (
 
 ### 06. Comparison with other software switches
 
+
+#### Run OVS
+
+```
+$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> openvswitch
+```
+
+Replace `<SCRIPT>` with:
+- runtime_cmd/06_software_switching/ovs_l2fwd_start.sh for L2Forwarding test case
+- runtime_cmd/06_software_switching/ovs_l2l3_acl_start.sh for L2L3-ACL test case
+- runtime_cmd/06_software_switching/ovs_vxlan_encap_start.sh for VXLAN (encap) test case
+
+#### Run TRex
+
+On the Generator machine use:
+
+```
+./ndr --stl --port 0 1 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=64  --verbose
+```
+
+Replace `<PROFILE>` with:
+- `stl/bench.py` for L2FWD and VXLAN (encap)
+- `trex_scripts/udp_1flow.py` for L2L3-ACL
+
 ### 07. Multi-queue scaling
 
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 

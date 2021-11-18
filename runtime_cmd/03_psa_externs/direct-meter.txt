@@ -1,0 +1,5 @@
+mac1="${GENERATOR_MAC1//:/}"
+mac=$(echo $mac1 |fold -w2|tac|tr -d "\n"|fold -w2)
+port=$(printf '%x' $PORT1_INDEX)
+
+bpftool map update pinned /sys/fs/bpf/pipeline99/maps/ingress_tbl_fwd key hex $mac 0 0 value hex 01 00 00 00 $port 00 00 00 40 42 0F 00 00 00 00 00 E2 04 00 00 00 00 00 00 40 42 0F 00 00 00 00 00 E2 04 00 00 00 00 00 00 6A 18 00 00 00 00 00 00 6A 18 00 00 00 00 00 00 6A 18 00 00 00 00 00 00 6A 18 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00

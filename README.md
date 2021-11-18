@@ -81,9 +81,13 @@ Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf
 ### Build OVS
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Install OVS from source
+=======
+Install OVS from source.
+>>>>>>> 73f20c957629a941f03dd1b107bcb6af688b1e7c
 
-Clone Git repository
+Clone Git repository:
 
 =======
 >>>>>>> 660127271e717085e838a2cca7d2857b9dea705e
@@ -94,18 +98,24 @@ $ git checkout v2.16.0
 <<<<<<< HEAD
 ```
 
-Bootstrapping
+Bootstrapping:
 
 ```
+<<<<<<< HEAD
 $ cd ovs
 =======
 >>>>>>> 660127271e717085e838a2cca7d2857b9dea705e
+=======
+>>>>>>> 73f20c957629a941f03dd1b107bcb6af688b1e7c
 $ ./boot.sh
 $ ./configure
 $ make
 $ make install
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> 73f20c957629a941f03dd1b107bcb6af688b1e7c
 ```
 
 =======

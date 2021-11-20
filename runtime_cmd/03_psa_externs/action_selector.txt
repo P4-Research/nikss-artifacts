@@ -1,0 +1,7 @@
+
+bpftool map update pinned /sys/fs/bpf/pipeline99/maps/ingress_as_actions key 2 0 0 0 value $PORT1_INDEX 0 0 0
+bpftool map create /sys/fs/bpf/pipeline99/maps/as_group_g2 type array key 4 value 4 entries 129 name as_group_g2
+bpftool map update pinned /sys/fs/bpf/pipeline99/maps/ingress_as_groups key hex 2 0 0 0 value pinned /sys/fs/bpf/pipeline99/maps/as_group_g2
+bpftool map update pinned /sys/fs/bpf/pipeline99/maps/as_group_g2 key 0 0 0 0 value 1 0 0 0
+bpftool map update pinned /sys/fs/bpf/pipeline99/maps/as_group_g2 key 1 0 0 0 value 2 0 0 0
+psabpf-ctl table add pipe 99 ingress_tbl_fwd ref key $GENERATOR_MAC1 data group 2

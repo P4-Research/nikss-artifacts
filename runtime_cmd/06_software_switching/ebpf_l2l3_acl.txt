@@ -1,0 +1,15 @@
+mac0="${GENERATOR_MAC0//:/ }"
+mac1="${GENERATOR_MAC1//:/ }"
+dut_mac1="${DUT_MAC1//:/ }"
+
+bpftool map update name ingress_vlan key $PORT0_INDEX 0 0 0 0 0 0 0 value hex 00 00
+
+bpftool map update name routable key hex 00 00 00 00 00 01 00 00 value 01
+
+bpftool map update name routing key hex 18 00 00 00 30 00 00 00 value hex $dut_mac1 $mac1 00 00
+
+bpftool map update name acl key hex 10 00 00 01 30 00 00 01 11 00 00 00 04 01 00 0c value 00 00 00 01
+
+bpftool map update name switching key hex $mac1 00 00 value $PORT1_INDEX 00 00 00
+
+bpftool map update name egress_vlan key $PORT1_INDEX 0 0 0 value hex 01

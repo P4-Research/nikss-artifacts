@@ -33,6 +33,7 @@ function exit_on_error() {
 }
 
 function cleanup() {
+    rm -f xdp_loader
     bash $OVS_REPO/utilities/ovs-ctl stop
     ip link del psa_recirc
     for intf in ${INTERFACES//,/ } ; do
@@ -86,6 +87,8 @@ fi
 
 cleanup
 
+
+clang -lbpf scripts/xdp_loader.c -o xdp_loader
 ip link add name psa_recirc type dummy
 ip link set dev psa_recirc up
 echo "PSA_PORT_RECIRCULATE configuration:"
@@ -132,7 +135,7 @@ for intf in ${INTERFACES//,/ } ; do
   if [[ $PROGRAM == *.p4 ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
   elif [[ $PROGRAM == *.c ]]; then
-      bpftool net attach xdp pinned /sys/fs/bpf/prog/xdp_xdp-ingress dev "$intf" overwrite
+      ./xdp_loader "$intf"
   fi
 
   # TODO: these commands are used if an eBPF program written in C is being tested.

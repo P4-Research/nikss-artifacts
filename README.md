@@ -156,9 +156,23 @@ $ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> openvswitch
 ```
 
 Replace `<SCRIPT>` with:
-- runtime_cmd/06_software_switching/ovs_l2fwd_start.sh for L2Forwarding test case
-- runtime_cmd/06_software_switching/ovs_l2l3_acl_start.sh for L2L3-ACL test case
-- runtime_cmd/06_software_switching/ovs_vxlan_encap_start.sh for VXLAN (encap) test case
+- `runtime_cmd/06_software_switching/ovs_l2fwd_start.sh` for L2Forwarding test case
+- `runtime_cmd/06_software_switching/ovs_l2l3_acl_start.sh` for L2L3-ACL test case
+- `runtime_cmd/06_software_switching/ovs_vxlan_encap_start.sh` for VXLAN (encap) test case
+
+#### Run eBPF/XDP
+
+```
+$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <RUNTIME_CMD> <EBPF_PROG>
+```
+
+To test eBPF/XDP L2FWD program:
+- replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/ebpf_l2fwd.txt`
+- replace `<EBPF_PROG>` with `ebpf/l2fwd.c`
+
+To test eBPF/XDP L2L3-ACL program:
+- replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/ebpf_l2l3_acl.txt`
+- replace `<EBPF_PROG>` with `ebpf/l2l3_acl.c`
 
 #### Run TRex
 

@@ -140,6 +140,27 @@ On Generator machine run the NDR script and tune `size=` parameter accordingly (
 
 ### 02. End-to-end performance
 
+#### DUT
+
+```
+$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> <P4-PROGRAM>
+```
+
+Replacements:
+- for UPF testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
+
+#### Generator
+
+`$ ./ndr --stl --port 0 1 --max-iterations 20 -t 60  --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE>`
+
+`<PROFILE>` values:
+- for UPF: 
+  - uplink: `--profile trex_scripts/upf_ul.py --prof-tun packet_len=64`
+  - downlink: 
+- for L2L3-ACL: 
+- for BNG:
+- for L2FWD: `--profile stl/bench.py --prof-tun size=64`
+
 ### 03. Microbenchmarking: the cost of PSA externs
 
 #### DUT

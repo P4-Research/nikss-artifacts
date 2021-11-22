@@ -142,6 +142,29 @@ On Generator machine run the NDR script and tune `size=` parameter accordingly (
 
 ### 03. Microbenchmarking: the cost of PSA externs
 
+#### DUT
+
+```
+$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> <P4-PROGRAM>
+```
+
+Run the script for each P4 program located under `p4testadata/03_psa_externs/`. Replace `<P4-PROGRAM>` with the path to a given P4 program (e.g. `p4testdata/03_psa_externs/action-selector.p4` to test the ActionSelector extern). 
+
+Replace `<SCRIPT>` with:
+- `runtime_cmd/03_psa_externs/base_forwarding.txt` for baseline.p4, checksum.p4, counter.p4, digest.p4, direct-counter.p4, hash.p4, internet-checksum.p4, register-read.p4, register-write.p4
+- `runtime_cmd/03_psa_externs/action_profile.txt` for action-profile.p4
+- `runtime_cmd/03_psa_externs/meter.txt` for meter.p4
+- `runtime_cmd/03_psa_externs/direct-meter.txt` for direct-meter.p4
+- `runtime_cmd/03_psa_externs/action_selector.txt` for action-selector.p4
+
+#### Generator
+
+On the Generator machine the below command to test each P4 program:
+
+```
+./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=64  --verbose
+```
+
 ### 04. Microbenchmarking: P4 Table lookup time
 
 ### 05. Comparison with other host-based P4 platforms

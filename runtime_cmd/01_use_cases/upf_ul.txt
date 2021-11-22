@@ -1,0 +1,13 @@
+psabpf-ctl table add pipe 99 ingress_upf_ingress_source_interface_lookup_by_port id 1 key $PORT0_INDEX data 0x00
+psabpf-ctl table add pipe 99 ingress_upf_ingress_source_interface_lookup_by_port id 1 key $PORT1_INDEX data 0x02
+
+psabpf-ctl table add pipe 99 ingress_ip_forward_ipv4_lpm id 1 key 0x02 0/0 data $DUT_MAC1 $GENERATOR_MAC1 $PORT1_INDEX
+psabpf-ctl table add pipe 99 ingress_ip_forward_ipv4_lpm id 1 key 0x00 172.20.16.99/32 data $DUT_MAC0 $GENERATOR_MAC0 $PORT0_INDEX
+#psabpf-ctl table add pipe 99 ingress_ip_forward_ipv4_lpm id 1 key 0x01 0/0 data $DUT_MAC1 $INJECTOR_PORT1_MAC1 $PORT1_INDEX
+
+psabpf-ctl table add pipe 99 ingress_upf_ingress_session_lookup_by_teid id 1 key 0x04d2 data 0x0000000000000000
+psabpf-ctl table add pipe 99 ingress_upf_ingress_pdr_lookup id 1 key 0x00 0x0a0a0a0a^0xffffffff 0^0 0^0 0^0 0^0 0x00 data 0x0000000c priority 9
+psabpf-ctl table add pipe 99 ingress_upf_ingress_far_lookup id 1 key 0x0c data 0x02
+psabpf-ctl table add pipe 99 ingress_upf_ingress_session_lookup_by_ue_ip id 1 key 0x0a0a0a0a data 0x0000000000000000
+psabpf-ctl table add pipe 99 ingress_upf_ingress_pdr_lookup id 1 key 0x00 0^0 0x0a0a0a0a^0xffffffff 0^0 0^0 0^0 0x02 data 0x0000000d priority 9
+psabpf-ctl table add pipe 99 ingress_upf_ingress_far_lookup id 2 key 0x0d data 0x00 0x000010e1 0xac141063 0xac141069

@@ -180,7 +180,7 @@ Replace `<SCRIPT>` with:
 On the Generator machine the below command to test each P4 program:
 
 ```
-./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=64  --verbose
+./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
 ```
 
 ### 04. Microbenchmarking: P4 Table lookup time
@@ -241,7 +241,7 @@ To test eBPF/XDP VXLAN program:
 On the Generator machine use:
 
 ```
-./ndr --stl --port 0 1 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=64  --verbose
+./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=64  --verbose
 ```
 
 Replace `<PROFILE>` with:
@@ -250,8 +250,14 @@ Replace `<PROFILE>` with:
 
 ### 07. Multi-queue scaling
 
+#### Run PSA-eBPF
+
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
 
 ```
 $ sudo -E ./setup_test.sh --queues 2 -C 6-11,18-23 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ``` 
+
+#### Run TRex
+
+

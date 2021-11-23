@@ -167,6 +167,41 @@ Enabling optimizations:
   - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2FWD: `--profile stl/bench.py --prof-tun size=64`
 
+#### Measuring total CPU cycles
+
+On the DUT machine use:
+
+```
+$ sudo bpftool prog profile id <PROG-ID> cycles
+```
+
+You can retrieve `<PROG-ID>` using:
+
+```
+$ sudo bpftool prog show -f
+```
+
+You should run the measurement for each BPF program participating in the packet processing:
+- If none or only O2, O3 optimizations are enabled, measure CPU cycles for the following programs: `xdp_func`, `tc_ingress_func`, `tc_egress_func`
+- If O1 (XDP acceleration) is enabled, measure CPU cycles for: `xdp_ingress_fun`, `xdp_egress_func`
+
+Then, on the Generator machine run a single iteration with line-rate:
+
+```
+$ ./ndr --stl --max-iterations 1 -t 60 --port 0 1 --pdr 0.1 --pdr-error 0.05 -o hu --force-map --profile <PROFILE>  --verbose
+```
+
+Once it's finished, stop `bpftool prog profile` on the DUT machine. The output will be as follows:
+
+```
+$ sudo bpftool prog profile id 6953 cycles
+
+          47497793 run_cnt             
+       68764695258 cycles
+```
+
+To get the CPU cycles per packet, divide `cycles` by `run_cnt`. 
+
 ### 03. Microbenchmarking: the cost of PSA externs
 
 #### DUT

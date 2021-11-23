@@ -163,6 +163,8 @@ Enabling optimizations:
   - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2L3-ACL: `--profile stl/udp_1flow.py`
 - for BNG:
+  - uplink: `--profile trex_scripts/bng_ul.py`
+  - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2FWD: `--profile stl/bench.py --prof-tun size=64`
 
 ### 03. Microbenchmarking: the cost of PSA externs

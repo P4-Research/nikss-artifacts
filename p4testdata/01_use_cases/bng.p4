@@ -45,7 +45,7 @@ const bit<16> ETHERTYPE_ARP  = 0x0806;
 const bit<16> ETHERTYPE_PPPOED = 0x8863;
 const bit<16> ETHERTYPE_PPPOES = 0x8864;
 
-const bit<8> PPPOE_PROTOCOL_IP4 = 0x21;
+const bit<16> PPPOE_PROTOCOL_IP4 = 0x0021;
 const bit<16> PPPOE_PROTOCOL_IP6 = 0x0057;
 
 const bit<8> PROTO_ICMP = 1;
@@ -86,7 +86,7 @@ header pppoe_t {
     bit<8>  code;
     bit<16> session_id;
     bit<16> length;
-    bit<8> protocol;
+    bit<16> protocol;
 }
 
 header ipv4_t {
@@ -185,6 +185,7 @@ parser packet_parser(packet_in packet, out headers_t hdr, inout local_metadata_t
     state parse_vlan_tag {
         packet.extract(hdr.vlan_tag);
         local_metadata.bng.s_tag = hdr.vlan_tag.vlan_id;
+        local_metadata.vlan_id = hdr.vlan_tag.vlan_id;
         eth_type_t eth_type = packet.lookahead<eth_type_t>();
         transition select(eth_type.value){
             ETHERTYPE_VLAN: parse_inner_vlan_tag;
@@ -194,6 +195,7 @@ parser packet_parser(packet_in packet, out headers_t hdr, inout local_metadata_t
 
     state parse_inner_vlan_tag {
         packet.extract(hdr.inner_vlan_tag);
+        local_metadata.vlan_id = hdr.inner_vlan_tag.vlan_id;
         local_metadata.bng.c_tag = hdr.inner_vlan_tag.vlan_id;
         transition parse_eth_type;
     }

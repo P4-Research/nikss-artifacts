@@ -1,0 +1,13 @@
+
+
+psabpf-ctl table add pipe 99 ingress_ingress_port_vlan id 3 key $PORT0_INDEX 0^0 0^0 0 data 3 1
+psabpf-ctl table add pipe 99 egress_egress_vlan id 2 key 3 $PORT1_INDEX
+
+psabpf-ctl table add pipe 99 ingress_fwd_classifier id 1 key $GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0x0800 data 2
+psabpf-ctl table add pipe 99 ingress_routing_v4 id 1 key 48.0.0.0/24 data $PORT1_INDEX $DUT_MAC1 $GENERATOR_MAC1
+psabpf-ctl table add pipe 99 ingress_next_vlan id 2 key $PORT1_INDEX data 10 100
+psabpf-ctl table add pipe 99 ingress_t_line_map id 1 key 10 100 data 99
+psabpf-ctl table add pipe 99 ingress_t_line_session_map id 1 key 99 data 64
+
+# high value; don't limit rate
+psabpf-ctl meter update pipe 99 ingress_m_besteff index 99 1250000:6250 1250000:6250 

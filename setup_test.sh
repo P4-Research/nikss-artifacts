@@ -7,13 +7,14 @@ function print_help() {
   echo
   echo "Syntax: $0 [OPTIONS] [PROGRAM]"
   echo ""
-  echo "Example: $0 -p ens1f0,ens1f1 -c commands.txt testdata/l2fwd.p4"
+  echo "Example: $0 -E env_file -c commands.txt testdata/l2fwd.p4"
   echo ""
   echo "OPTIONS:"
-  echo "-p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)"
+  echo "-E|--env          File with environment variables for DUT."
   echo "-c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps."
   echo "-q|--queues        Set number of RX/TX queues per NIC (default 1)."
   echo "-C|--core          CPU core that will be pinned to interfaces."
+  echo "--p4args           P4ARGS for PSA-eBPF."
   echo "--help             Print this message."
   echo ""
   echo "PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)"
@@ -52,8 +53,8 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
-    -p|--port-list)
-      INTERFACES="$2"
+    -E|--env)
+      ENV="$2"
       shift # past argument
       shift # past value
       ;;
@@ -72,6 +73,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+     --p4args)
+      P4ARGS="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -85,8 +91,18 @@ if [[ -n $1 ]]; then
     PROGRAM="$1"
 fi
 
-cleanup
+if [[ -z "${ENV}" ]]; then
+    echo "Environment file is not provided!"
+    exit 0
+fi
 
+set -o allexport
+source $ENV
+set +o allexport
+
+declare -a INTERFACES=( $PORT0_NAME $PORT1_NAME )
+
+cleanup
 
 clang -lbpf scripts/xdp_loader.c -o xdp_loader
 ip link add name psa_recirc type dummy

@@ -143,7 +143,8 @@ $ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replacements:
-- for UPF testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
+- for UPF uplink (decap) testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf_ul.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
+- for UPF downlink (encap) testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf_dl.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
 
 #### Generator
 
@@ -152,7 +153,7 @@ Replacements:
 `<PROFILE>` values:
 - for UPF: 
   - uplink: `--profile trex_scripts/upf_ul.py --prof-tun packet_len=64`
-  - downlink: 
+  - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2L3-ACL: 
 - for BNG:
 - for L2FWD: `--profile stl/bench.py --prof-tun size=64`

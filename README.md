@@ -139,12 +139,19 @@ On Generator machine run the NDR script and tune `size=` parameter accordingly (
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> --p4args <P4ARGS> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replacements:
 - for UPF uplink (decap) testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf_ul.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
 - for UPF downlink (encap) testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/upf_dl.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/upf.p4`
+- for L2L3-ACL testing replace `<SCRIPT>` with `runtime_cmd/01_use_cases/l2l3_acl_routing.txt` and `<P4-PROGRAM` with `p4testdata/01_use_cases/l2l3_acl.p4`
+
+Enabling optimizations:
+- "none" - replace `<P4ARGS>` with `"--hdr2Map --max-ternary-masks 3"`
+- "+O1" - replace `<P4ARGS>` with `"--xdp --hdr2Map --max-ternary-masks 3"`
+- "O1 +O2" - replace `<P4ARGS>` with `"--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3"`
+- "O1,O2 +O3" - replace `<P4ARGS>` with `"--xdp --pipeline-opt --table-caching --hdr2Map --max-ternary-masks 3"`. This configuration applies All optimizations.
 
 #### Generator
 
@@ -154,7 +161,7 @@ Replacements:
 - for UPF: 
   - uplink: `--profile trex_scripts/upf_ul.py --prof-tun packet_len=64`
   - downlink: `--profile stl/bench.py --prof-tun size=64`
-- for L2L3-ACL: 
+- for L2L3-ACL: `--profile stl/udp_1flow.py`
 - for BNG:
 - for L2FWD: `--profile stl/bench.py --prof-tun size=64`
 

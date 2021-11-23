@@ -97,11 +97,6 @@ In the case of any problems, please refer to the [official Open vSwitch installa
 We use `setup_test.sh` script to automatically deploy test configurations. 
 
 Before running the script you should prepare the environment file based on the template provided under `env/` directory.
-Then, export all variables by using (remember to pass your env file):
-
-```
-$ set -a && source env/pllab.env
-``` 
 
 The basic usage of `setup_test.sh` is as follows:
 
@@ -112,16 +107,17 @@ The script will configure and deploy the PSA-eBPF setup for benchmarking.
 
 Syntax: ./setup_test.sh [OPTIONS] [PROGRAM]
 
-Example: ./setup_test.sh -p ens1f0,ens1f1 -c commands.txt testdata/l2fwd.p4
+Example: ./setup_test.sh -E env_file -c commands.txt testdata/l2fwd.p4
 
 OPTIONS:
--p|--port-list     Comma separated list of interfaces that should be used for testing. (mandatory)
+-E|--env          File with environment variables for DUT.
 -c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps.
+-q|--queues        Set number of RX/TX queues per NIC (default 1).
 -C|--core          CPU core that will be pinned to interfaces.
+--p4args           P4ARGS for PSA-eBPF.
 --help             Print this message.
 
 PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)
-
 ```
 
 ### 01. Packet forwarding rate
@@ -129,7 +125,7 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 Run PSA-eBPF with L2L3-ACL program and switching rules on DUT machine: 
 
 ```
-sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c runtime_cmd/01_use_cases/l2l3_acl_switching.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_switching.txt p4testdata/01_use_cases/l2l3_acl.p4
 ```
 
 On Generator machine run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
@@ -143,7 +139,7 @@ On Generator machine run the NDR script and tune `size=` parameter accordingly (
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replacements:
@@ -166,7 +162,7 @@ Replacements:
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Run the script for each P4 program located under `p4testadata/03_psa_externs/`. Replace `<P4-PROGRAM>` with the path to a given P4 program (e.g. `p4testdata/03_psa_externs/action-selector.p4` to test the ActionSelector extern). 
@@ -196,7 +192,7 @@ On the Generator machine the below command to test each P4 program:
 #### Run OVS
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <SCRIPT> openvswitch
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> openvswitch
 ```
 
 Replace `<SCRIPT>` with:
@@ -207,7 +203,7 @@ Replace `<SCRIPT>` with:
 #### Run eBPF/XDP
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -p ens4f0,ens4f1 -c <RUNTIME_CMD> <EBPF_PROG>
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <RUNTIME_CMD> <EBPF_PROG>
 ```
 
 To test eBPF/XDP L2FWD program:
@@ -235,5 +231,5 @@ Replace `<PROFILE>` with:
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
 
 ```
-$ sudo -E ./setup_test.sh --queues 2 -C 6-11,18-23 -p ens4f0,ens4f1 -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+$ sudo -E ./setup_test.sh --queues 2 -C 6-11,18-23 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ``` 

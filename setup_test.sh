@@ -37,7 +37,7 @@ function cleanup() {
     rm -f xdp_loader
     bash $OVS_REPO/utilities/ovs-ctl stop
     ip link del psa_recirc
-    for intf in ${INTERFACES//,/ } ; do
+    for intf in "${INTERFACES[@]}" ; do
         ip link set dev "$intf" xdp off
         tc qdisc del dev "$intf" clsact
     done
@@ -98,9 +98,10 @@ fi
 
 set -o allexport
 source $ENV
-set +o allexport
+#set +o allexport
 
-declare -a INTERFACES=( $PORT0_NAME $PORT1_NAME )
+echo $PORT1_NAME
+declare -a INTERFACES=("$PORT0_NAME" "$PORT1_NAME")
 
 cleanup
 
@@ -134,7 +135,7 @@ elif [[ $PROGRAM == "openvswitch" ]]; then
   bash $OVS_REPO/utilities/ovs-ctl start
 fi
 
-for intf in ${INTERFACES//,/ } ; do
+for intf in "${INTERFACES[@]}" ; do
   # Disable trash traffic
   sysctl -w net.ipv6.conf."$intf".disable_ipv6=1
   sysctl -w net.ipv6.conf."$intf".autoconf=0
@@ -176,7 +177,7 @@ fi
 
 echo -e "\n\nDumping network configuration:"
 # dump network configuration
-for intf in ${INTERFACES//,/ } ; do
+for intf in "${INTERFACES[@]}" ; do
   ip link show "$intf"
 done
 

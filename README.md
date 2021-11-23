@@ -170,7 +170,7 @@ Enabling optimizations:
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Run the script for each P4 program located under `p4testadata/03_psa_externs/`. Replace `<P4-PROGRAM>` with the path to a given P4 program (e.g. `p4testdata/03_psa_externs/action-selector.p4` to test the ActionSelector extern). 

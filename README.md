@@ -189,6 +189,23 @@ On the Generator machine the below command to test each P4 program:
 
 ### 06. Comparison with other software switches
 
+#### Run PSA-eBPF
+
+```
+$ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c <RUNTIME_CMD> <P4-PROGRAM>
+```
+
+To test L2FWD program:
+- replace `<RUNTIME_CMD>` with `runtime_cmd/00_warmup/l2fwd.txt`
+- replace `<P4-PROGRAM>` with `p4testdata/00_warmup/l2fwd.p4`
+
+To test VXLAN program (encap):
+- replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/vxlan_vtep_encap.txt`
+- replace `<P4-PROGRAM>` with `p4testdata/06_software_switching/vxlan_vtep.p4`
+
+To test L2L3-ACL program:
+- replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/l2l3_acl_simple.txt`
+- replace `<P4-PROGRAM>` with `p4testdata/06_software_switching/l2l3_acl_simple.p4`
 
 #### Run OVS
 
@@ -197,7 +214,7 @@ $ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c <SCRIPT> openvswitch
 ```
 
 Replace `<SCRIPT>` with:
-- `runtime_cmd/06_software_switching/ovs_l2fwd_start.sh` for L2Forwarding test case
+- `runtime_cmd/06_software_switching/ovs_l2fwd_start.sh` for L2FWD test case
 - `runtime_cmd/06_software_switching/ovs_l2l3_acl_start.sh` for L2L3-ACL test case
 - `runtime_cmd/06_software_switching/ovs_vxlan_encap_start.sh` for VXLAN (encap) test case
 
@@ -214,6 +231,10 @@ To test eBPF/XDP L2FWD program:
 To test eBPF/XDP L2L3-ACL program:
 - replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/ebpf_l2l3_acl.txt`
 - replace `<EBPF_PROG>` with `ebpf/l2l3_acl.c`
+
+To test eBPF/XDP VXLAN program:
+- replace `<RUNTIME_CMD>` with `runtime_cmd/06_software_switching/ebpf_vxlan_vtep_encap.txt`
+- replace `<EBPF_PROG>` with `ebpf/vxlan_vtep.c`
 
 #### Run TRex
 

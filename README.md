@@ -127,13 +127,25 @@ Run PSA-eBPF.
 - L2FWD program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
+sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
 ```
 
 - L2L3-ACL program and routing rules on DUT machine: 
 
 ```
-sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+```
+
+- BNG program on DUT machine:
+
+```
+sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
+```
+
+- UPF program on DUT machine:
+
+```
+sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
 ```
 
 #### Run TRex
@@ -198,7 +210,7 @@ You should run the measurement for each BPF program participating in the packet 
 Then, on the Generator machine run a single iteration with line-rate:
 
 ```
-$ ./ndr --stl --max-iterations 1 -t 60 --port 0 1 --pdr 0.1 --pdr-error 0.05 -o hu --force-map --profile <PROFILE>  --verbose
+$ ./ndr --stl --max-iterations 20 -t 60 --port 0 1 --pdr 0.1 --pdr-error 0.05 -o hu --force-map --profile <PROFILE>  --verbose
 ```
 
 Once it's finished, stop `bpftool prog profile` on the DUT machine. The output will be as follows:

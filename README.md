@@ -122,13 +122,23 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 
 ### 01. Packet forwarding rate
 
-Run PSA-eBPF with L2L3-ACL program and switching rules on DUT machine: 
+Run PSA-eBPF.
+
+- L2FWD program on DUT machine:
+
+```
+sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
+```
+
+- L2L3-ACL program and routing rules on DUT machine: 
 
 ```
 sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ```
 
-On Generator machine run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
+#### Run TRex
+
+For each program, run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
 
 ```
 ./ndr --stl --port 0 1 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose

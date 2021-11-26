@@ -127,25 +127,25 @@ Run PSA-eBPF.
 - L2FWD program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
 ```
 
 - L2L3-ACL program and routing rules on DUT machine: 
 
 ```
-sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ```
 
 - BNG program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
 ```
 
 - UPF program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
 ```
 
 #### Run TRex
@@ -153,7 +153,7 @@ sudo -E ./setup_test.sh --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-E
 For each program, run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
 
 ```
-./ndr --stl --port 0 1 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
+./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
 ```
 
 ### 02. End-to-end performance

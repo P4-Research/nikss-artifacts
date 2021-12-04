@@ -78,6 +78,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+     --target)
+      TARGET="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -125,6 +130,12 @@ if [[ $PROGRAM == *.p4 ]]; then
   exit_on_error
   psabpf-ctl pipeline load id 99 out.o
   exit_on_error
+elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
+  echo "Compiling data plane program.. $PROGRAM"
+  make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
+  exit_on_error
+  psabpf-ctl pipeline load id 99 out.o
+  exit_on_error
 elif [[ $PROGRAM == *.c ]]; then
   echo "Compiling data plane program.. $PROGRAM"
   make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
@@ -151,6 +162,11 @@ for intf in "${INTERFACES[@]}" ; do
 
   if [[ $PROGRAM == *.p4 ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
+  elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
+      bpftool net attach xdp pinned /sys/fs/bpf/pipeline99/xdp_xdp-ingress dev "$intf" overwrite
+      tc qdisc add dev "$intf" clsact
+      tc filter add dev "$intf" ingress bpf da fd /sys/fs/bpf/pipeline99/classifier_tc-ingress
+      tc filter add dev "$intf" egress bpf da fd /sys/fs/bpf/pipeline99/classifier_tc-egress
   elif [[ $PROGRAM == *.c ]]; then
       ./xdp_loader "$intf"
   fi

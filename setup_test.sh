@@ -78,6 +78,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+     --target)
+      TARGET="$2"
+      shift # past argument
+      shift # past value
+      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument
@@ -125,6 +130,12 @@ if [[ $PROGRAM == *.p4 ]]; then
   exit_on_error
   psabpf-ctl pipeline load id 99 out.o
   exit_on_error
+elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
+  echo "Compiling data plane program.. $PROGRAM"
+  make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
+  exit_on_error
+  psabpf-ctl pipeline load id 99 out.o
+  exit_on_error
 elif [[ $PROGRAM == *.c ]]; then
   echo "Compiling data plane program.. $PROGRAM"
   make -f $P4C_REPO/backends/ebpf/runtime/kernel.mk BPFOBJ=out.o ARGS="$ARGS" ebpf CFILE=$PROGRAM
@@ -151,16 +162,11 @@ for intf in "${INTERFACES[@]}" ; do
 
   if [[ $PROGRAM == *.p4 ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
+  elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
+      psabpf-ctl pipeline add-port id 99 "$intf"
   elif [[ $PROGRAM == *.c ]]; then
       ./xdp_loader "$intf"
   fi
-
-  # TODO: these commands are used if an eBPF program written in C is being tested.
-  #  We should refactor this script.
-  #bpftool net attach xdp pinned /sys/fs/bpf/prog/xdp_xdp-ingress dev "$intf" overwrite
-  #tc qdisc add dev "$intf" clsact
-  #tc filter add dev "$intf" ingress bpf da fd /sys/fs/bpf/prog/classifier_tc-ingress
-  #tc filter add dev "$intf" egress bpf da fd /sys/fs/bpf/prog/classifier_tc-egress
 
   # by default, pin IRQ to 3rd CPU core
   bash scripts/set_irq_affinity.sh $CORE "$intf"
@@ -189,12 +195,21 @@ fi
 echo -e "\n\nDumping BPF setup:"
 bpftool net show
 
-XDP_PROG_ID="$(bpftool prog show -f | grep xdp_func | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_HELPER_PROG="$(bpftool prog show -f | grep xdp_func | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_INGRESS_PROG="$(bpftool prog show -f | grep xdp_ingress_fun | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_EGRESS_PROG="$(bpftool prog show -f | grep xdp_egress_fun | awk '{print $1}' | tr -d : | tail -n1)"
+
 TC_EGRESS_PROG_ID="$(bpftool prog show -f | grep tc_egress_func | awk '{print $1}' | tr -d : | tail -n1)"
 TC_INGRESS_PROG_ID="$(bpftool prog show -f | grep tc_ingress_func | awk '{print $1}' | tr -d : | tail -n1)"
 
-XLATED_XDP="$(bpftool prog dump xlated id "$XDP_PROG_ID" | grep -v ";" | wc -l)"
-JITED_XDP="$(bpftool prog dump jited id "$XDP_PROG_ID" | grep -v ";" | wc -l)"
+XLATED_XDP_HELPER="$(bpftool prog dump xlated id "$XDP_HELPER_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_HELPER="$(bpftool prog dump jited id "$XDP_HELPER_PROG" | grep -v ";" | wc -l)"
+
+XLATED_XDP_INGRESS="$(bpftool prog dump xlated id "$XDP_INGRESS_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_INGRESS="$(bpftool prog dump jited id "$XDP_INGRESS_PROG" | grep -v ";" | wc -l)"
+
+XLATED_XDP_EGRESS="$(bpftool prog dump xlated id "$XDP_EGRESS_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_EGRESS="$(bpftool prog dump jited id "$XDP_EGRESS_PROG" | grep -v ";" | wc -l)"
 
 XLATED_TC_INGRESS="$(bpftool prog dump xlated id "$TC_INGRESS_PROG_ID" | grep -v ";" | wc -l)"
 JITED_TC_INGRESS="$(bpftool prog dump jited id "$TC_INGRESS_PROG_ID" | grep -v ";" | wc -l)"
@@ -202,13 +217,23 @@ JITED_TC_INGRESS="$(bpftool prog dump jited id "$TC_INGRESS_PROG_ID" | grep -v "
 XLATED_TC_EGRESS="$(bpftool prog dump xlated id "$TC_EGRESS_PROG_ID" | grep -v ";" | wc -l)"
 JITED_TC_EGRESS="$(bpftool prog dump jited id "$TC_EGRESS_PROG_ID" | grep -v ";" | wc -l)"
 
-XLATED=$(( $XLATED_XDP + $XLATED_TC_INGRESS + $XLATED_TC_EGRESS ))
-JITED=$(( $JITED_XDP + $JITED_TC_INGRESS + $JITED_TC_EGRESS  ))
-
 STACK_SIZE="$(llvm-objdump -S -no-show-raw-insn out.o | grep "r10 -" | awk '{print $7}' | sort -n | tail -n1 | tr -d ")")"
 
 echo -e "Summary of eBPF programs:"
 echo -e "BPF stack size = "$STACK_SIZE""
 echo -e "# of BPF insns"
-echo -e "\txlated: "$XLATED""
-echo -e "\tjited: "$JITED""
+echo -e "\tXDP helper:"
+echo -e "\t\txlated: "$XLATED_XDP_HELPER""
+echo -e "\t\tjited: "$JITED_XDP_HELPER""
+echo -e "\tXDP ingress:"
+echo -e "\t\txlated: "$XLATED_XDP_INGRESS""
+echo -e "\t\tjited: "$JITED_XDP_INGRESS""
+echo -e "\tXDP egress:"
+echo -e "\t\txlated: "$XLATED_XDP_EGRESS""
+echo -e "\t\tjited: "$JITED_XDP_EGRESS""
+echo -e "\tTC ingress:"
+echo -e "\t\txlated: "$XLATED_TC_INGRESS""
+echo -e "\t\tjited: "$JITED_TC_INGRESS""
+echo -e "\tTC egress:"
+echo -e "\t\txlated: "$XLATED_TC_EGRESS""
+echo -e "\t\tjited: "$JITED_TC_EGRESS""

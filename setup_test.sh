@@ -195,12 +195,21 @@ fi
 echo -e "\n\nDumping BPF setup:"
 bpftool net show
 
-XDP_PROG_ID="$(bpftool prog show -f | grep xdp_func | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_HELPER_PROG="$(bpftool prog show -f | grep xdp_func | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_INGRESS_PROG="$(bpftool prog show -f | grep xdp_ingress_fun | awk '{print $1}' | tr -d : | tail -n1)"
+XDP_EGRESS_PROG="$(bpftool prog show -f | grep xdp_egress_fun | awk '{print $1}' | tr -d : | tail -n1)"
+
 TC_EGRESS_PROG_ID="$(bpftool prog show -f | grep tc_egress_func | awk '{print $1}' | tr -d : | tail -n1)"
 TC_INGRESS_PROG_ID="$(bpftool prog show -f | grep tc_ingress_func | awk '{print $1}' | tr -d : | tail -n1)"
 
-XLATED_XDP="$(bpftool prog dump xlated id "$XDP_PROG_ID" | grep -v ";" | wc -l)"
-JITED_XDP="$(bpftool prog dump jited id "$XDP_PROG_ID" | grep -v ";" | wc -l)"
+XLATED_XDP_HELPER="$(bpftool prog dump xlated id "$XDP_HELPER_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_HELPER="$(bpftool prog dump jited id "$XDP_HELPER_PROG" | grep -v ";" | wc -l)"
+
+XLATED_XDP_INGRESS="$(bpftool prog dump xlated id "$XDP_INGRESS_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_INGRESS="$(bpftool prog dump jited id "$XDP_INGRESS_PROG" | grep -v ";" | wc -l)"
+
+XLATED_XDP_EGRESS="$(bpftool prog dump xlated id "$XDP_EGRESS_PROG" | grep -v ";" | wc -l)"
+JITED_XDP_EGRESS="$(bpftool prog dump jited id "$XDP_EGRESS_PROG" | grep -v ";" | wc -l)"
 
 XLATED_TC_INGRESS="$(bpftool prog dump xlated id "$TC_INGRESS_PROG_ID" | grep -v ";" | wc -l)"
 JITED_TC_INGRESS="$(bpftool prog dump jited id "$TC_INGRESS_PROG_ID" | grep -v ";" | wc -l)"
@@ -208,13 +217,23 @@ JITED_TC_INGRESS="$(bpftool prog dump jited id "$TC_INGRESS_PROG_ID" | grep -v "
 XLATED_TC_EGRESS="$(bpftool prog dump xlated id "$TC_EGRESS_PROG_ID" | grep -v ";" | wc -l)"
 JITED_TC_EGRESS="$(bpftool prog dump jited id "$TC_EGRESS_PROG_ID" | grep -v ";" | wc -l)"
 
-XLATED=$(( $XLATED_XDP + $XLATED_TC_INGRESS + $XLATED_TC_EGRESS ))
-JITED=$(( $JITED_XDP + $JITED_TC_INGRESS + $JITED_TC_EGRESS  ))
-
 STACK_SIZE="$(llvm-objdump -S -no-show-raw-insn out.o | grep "r10 -" | awk '{print $7}' | sort -n | tail -n1 | tr -d ")")"
 
 echo -e "Summary of eBPF programs:"
 echo -e "BPF stack size = "$STACK_SIZE""
 echo -e "# of BPF insns"
-echo -e "\txlated: "$XLATED""
-echo -e "\tjited: "$JITED""
+echo -e "\tXDP helper:"
+echo -e "\t\txlated: "$XLATED_XDP_HELPER""
+echo -e "\t\tjited: "$JITED_XDP_HELPER""
+echo -e "\tXDP ingress:"
+echo -e "\t\txlated: "$XLATED_XDP_INGRESS""
+echo -e "\t\tjited: "$JITED_XDP_INGRESS""
+echo -e "\tXDP egress:"
+echo -e "\t\txlated: "$XLATED_XDP_EGRESS""
+echo -e "\t\tjited: "$JITED_XDP_EGRESS""
+echo -e "\tTC ingress:"
+echo -e "\t\txlated: "$XLATED_TC_INGRESS""
+echo -e "\t\tjited: "$JITED_TC_INGRESS""
+echo -e "\tTC egress:"
+echo -e "\t\txlated: "$XLATED_TC_EGRESS""
+echo -e "\t\tjited: "$JITED_TC_EGRESS""

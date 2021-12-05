@@ -1,0 +1,8 @@
+mac0="${GENERATOR_MAC0//:/ }"
+mac1="${GENERATOR_MAC1//:/ }"
+
+bpftool map update name tx_port key $PORT1_INDEX 00 00 00 value $PORT1_INDEX 00 00 00
+
+bpftool map update name l2fwd key hex $mac1 value $PORT1_INDEX 00 00 00
+
+bpftool map update name vteps key $PORT1_INDEX 0 0 0 value hex $mac0 $mac1 0a 0a 0a 0a 0c 0c 0c 0c 00 0a 01

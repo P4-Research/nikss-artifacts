@@ -122,16 +122,38 @@ PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C fi
 
 ### 01. Packet forwarding rate
 
-Run PSA-eBPF with L2L3-ACL program and switching rules on DUT machine: 
+Run PSA-eBPF.
+
+- L2FWD program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_switching.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
 ```
 
-On Generator machine run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
+- L2L3-ACL program and routing rules on DUT machine: 
 
 ```
-./ndr --stl --port 0 1 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+```
+
+- BNG program on DUT machine:
+
+```
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
+```
+
+- UPF program on DUT machine:
+
+```
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
+```
+
+#### Run TRex
+
+For each program, run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
+
+```
+./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
 ```
 
 ### 02. End-to-end performance
@@ -163,7 +185,44 @@ Enabling optimizations:
   - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2L3-ACL: `--profile stl/udp_1flow.py`
 - for BNG:
+  - uplink: `--profile trex_scripts/bng_ul.py`
+  - downlink: `--profile stl/bench.py --prof-tun size=64`
 - for L2FWD: `--profile stl/bench.py --prof-tun size=64`
+
+#### Measuring total CPU cycles
+
+On the DUT machine use:
+
+```
+$ sudo bpftool prog profile id <PROG-ID> cycles
+```
+
+You can retrieve `<PROG-ID>` using:
+
+```
+$ sudo bpftool prog show -f
+```
+
+You should run the measurement for each BPF program participating in the packet processing:
+- If none or only O2, O3 optimizations are enabled, measure CPU cycles for the following programs: `xdp_func`, `tc_ingress_func`, `tc_egress_func`
+- If O1 (XDP acceleration) is enabled, measure CPU cycles for: `xdp_ingress_fun`, `xdp_egress_func`
+
+Then, on the Generator machine run a single iteration with line-rate:
+
+```
+$ ./ndr --stl --max-iterations 20 -t 60 --port 0 1 --pdr 0.1 --pdr-error 0.05 -o hu --force-map --profile <PROFILE>  --verbose
+```
+
+Once it's finished, stop `bpftool prog profile` on the DUT machine. The output will be as follows:
+
+```
+$ sudo bpftool prog profile id 6953 cycles
+
+          47497793 run_cnt             
+       68764695258 cycles
+```
+
+To get the CPU cycles per packet, divide `cycles` by `run_cnt`. 
 
 ### 03. Microbenchmarking: the cost of PSA externs
 

@@ -163,20 +163,10 @@ for intf in "${INTERFACES[@]}" ; do
   if [[ $PROGRAM == *.p4 ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
   elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
-      bpftool net attach xdp pinned /sys/fs/bpf/pipeline99/xdp_xdp-ingress dev "$intf" overwrite
-      tc qdisc add dev "$intf" clsact
-      tc filter add dev "$intf" ingress bpf da fd /sys/fs/bpf/pipeline99/classifier_tc-ingress
-      tc filter add dev "$intf" egress bpf da fd /sys/fs/bpf/pipeline99/classifier_tc-egress
+      psabpf-ctl pipeline add-port id 99 "$intf"
   elif [[ $PROGRAM == *.c ]]; then
       ./xdp_loader "$intf"
   fi
-
-  # TODO: these commands are used if an eBPF program written in C is being tested.
-  #  We should refactor this script.
-  #bpftool net attach xdp pinned /sys/fs/bpf/prog/xdp_xdp-ingress dev "$intf" overwrite
-  #tc qdisc add dev "$intf" clsact
-  #tc filter add dev "$intf" ingress bpf da fd /sys/fs/bpf/prog/classifier_tc-ingress
-  #tc filter add dev "$intf" egress bpf da fd /sys/fs/bpf/prog/classifier_tc-egress
 
   # by default, pin IRQ to 3rd CPU core
   bash scripts/set_irq_affinity.sh $CORE "$intf"

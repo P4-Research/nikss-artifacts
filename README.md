@@ -76,6 +76,28 @@ Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf
 
 ### Build P4-DPDK
 
+To build the P4-DPDK target on the DUT machine, proceed as follows:
+-  Compile the p4c-dpdk compiler by cloning the [p4c](https://github.com/p4lang/p4c) mainstream repository and following its instructions to build it from source. Only build the p4c-dpdk compiler by indicating *p4c-dpdk* as the target:
+```
+mkdir build
+cd build
+cmake ..
+make -j4 p4c-dpdk
+```
+**Do not run** ***'make install'*** otherwise the previsously installed PSA-EBPF compiler will be overwritten.
+Set the P4C_DPDK_REPO environment variable to the root directory of the *p4c* code base. The p4c-dpdk compiler path should be the following:
+```
+$P4C_DPDK_REPO/build/backends/dpdk/p4c-dpdk
+```
+-  Download [DPDK 21.11.0](https://fast.dpdk.org/rel/dpdk-21.11.tar.xz) and install the required dependencies as indicated in the [DPDK documentatio](https://doc.dpdk.org/guides/linux_gsg/sys_reqs.html#compilation-of-the-dpdk). Build DPDK along with DPDK Software Switch (SWX) pipeline application as follows:
+```
+tar xf dpdk-21.11.tar.xz 
+cd dpdk-21.11
+meson -Dexamples=pipeline  build
+ninja -C build
+ninja -C build install
+```
+Set the DPDK_ROOT environment variable to the root directory of the *dpdk* code base.
 ### Build BMv2
 
 ### Build OVS

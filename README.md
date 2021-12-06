@@ -251,6 +251,22 @@ On the Generator machine the below command to test each P4 program:
 
 ### 04. Microbenchmarking: P4 Table lookup time
 
+#### DUT
+
+```
+$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+```
+
+Replace `<P4-PROGRAM>` with: 
+- `p4testdata/04_tables/baseline.p4` to measure baseline program
+- `p4testdata/04_tables/exact.p4` to test exact match
+- `p4testdata/04_tables/lpm.p4` to test LPM
+- `p4testdata/04_tables/ternary.p4` to test ternary match
+
+Replace `<SCRIPT>` with: 
+- nothing to measure the baseline program (remove `-c` flag)
+
+
 ### 05. Comparison with other host-based P4 platforms
 
 ### 06. Comparison with other software switches

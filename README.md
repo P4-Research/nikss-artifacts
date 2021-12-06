@@ -254,7 +254,7 @@ On the Generator machine the below command to test each P4 program:
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 11" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replace `<P4-PROGRAM>` with: 
@@ -265,7 +265,9 @@ Replace `<P4-PROGRAM>` with:
 
 Replace `<SCRIPT>` with: 
 - nothing to measure the baseline program (remove `-c` flag)
-
+- `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/exact` to test exact match 
+- `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/lpm` to test LPM match. Use `runtime_cmd/04_tables/lpm/1000-entries-10-prefixes` to test scenario with 10 LPM prefixes. 
+- `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/ternary` to test ternary match. Use `runtime_cmd/04_tables/ternary/1000-entries-10-masks` to test scenario with 10 ternary masks.  
 
 ### 05. Comparison with other host-based P4 platforms
 

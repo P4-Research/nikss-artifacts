@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for i in {16..25..1}
+do
+  for k in {0..99}
+  do
+    psabpf-ctl table add pipe 99 ingress_tbl_fwd id 1 key 48.$k.0.4/$i data $PORT1_INDEX
+  done
+done

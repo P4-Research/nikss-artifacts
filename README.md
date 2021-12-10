@@ -153,8 +153,19 @@ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --p
 For each program, run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
 
 ```
-./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
+./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=X  --verbose
 ```
+
+`<PROFILE>` values:
+- for UPF: 
+  - uplink: `--profile trex_scripts/upf_ul.py`
+  - downlink: `--profile stl/bench.py`
+- for L2L3-ACL: `--profile trex_scripts/udp_1flow.py`
+- for BNG:
+  - uplink: `--profile trex_scripts/bng_ul.py`
+  - downlink: `--profile stl/bench.py`
+- for L2FWD: `--profile stl/bench.py`
+
 
 ### 02. End-to-end performance
 
@@ -183,7 +194,7 @@ Enabling optimizations:
 - for UPF: 
   - uplink: `--profile trex_scripts/upf_ul.py --prof-tun packet_len=64`
   - downlink: `--profile stl/bench.py --prof-tun size=64`
-- for L2L3-ACL: `--profile stl/udp_1flow.py`
+- for L2L3-ACL: `--profile trex_scripts/udp_1flow.py`
 - for BNG:
   - uplink: `--profile trex_scripts/bng_ul.py`
   - downlink: `--profile stl/bench.py --prof-tun size=64`

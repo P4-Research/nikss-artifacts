@@ -122,7 +122,7 @@ ip link show psa_recirc
 declare -a RECIRC_PORT_ID=$(ip -o link | awk '$2 == "psa_recirc:" {print $1}' | awk -F':' '{print $1}')
 
 # Trace all command from this point
-set -x
+#set -x
 
 declare -a ARGS="-DPSA_PORT_RECIRCULATE=$RECIRC_PORT_ID"
 

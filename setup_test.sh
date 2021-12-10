@@ -142,10 +142,10 @@ mempool MEMPOOL0 buffer 2304 pool 32K cache 256 cpu 1
 link LINK0 dev $PORT0_PCI_DEV rxq $NUM_QUEUES 2048 MEMPOOL0 txq $NUM_QUEUES 1024 promiscuous on
 link LINK1 dev $PORT1_PCI_DEV rxq $NUM_QUEUES 2048 MEMPOOL0 txq $NUM_QUEUES 1024 promiscuous on
 pipeline PIPELINE0 create 0
-pipeline PIPELINE0 port in 0 link LINK0 rxq 0 bsz 8
-pipeline PIPELINE0 port in 1 link LINK1 rxq 0 bsz 8
-pipeline PIPELINE0 port out 0 link LINK0 txq 0 bsz 1
-pipeline PIPELINE0 port out 1 link LINK1 txq 0 bsz 1
+pipeline PIPELINE0 port in 0 link LINK0 rxq 0 bsz 32
+pipeline PIPELINE0 port in 1 link LINK1 rxq 0 bsz 32
+pipeline PIPELINE0 port out 0 link LINK0 txq 0 bsz 32
+pipeline PIPELINE0 port out 1 link LINK1 txq 0 bsz 32
 pipeline PIPELINE0 build out.spec
 EOC
   echo ""

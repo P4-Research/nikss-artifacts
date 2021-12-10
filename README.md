@@ -85,10 +85,7 @@ cmake ..
 make -j4 p4c-dpdk
 ```
 **Do not run** ***'make install'*** otherwise the previsously installed PSA-EBPF compiler will be overwritten.
-Set the P4C_DPDK_REPO environment variable to the root directory of the *p4c* code base. The p4c-dpdk compiler path should be the following:
-```
-$P4C_DPDK_REPO/build/backends/dpdk/p4c-dpdk
-```
+Set the P4C_DPDK_BIN environment variable to the absolute path of the p4c-dpdk compiler.
 -  Download [DPDK 21.11.0](https://fast.dpdk.org/rel/dpdk-21.11.tar.xz) and install the required dependencies as indicated in the [DPDK documentatio](https://doc.dpdk.org/guides/linux_gsg/sys_reqs.html#compilation-of-the-dpdk). Build DPDK along with DPDK Software Switch (SWX) pipeline application as follows (a patch needs to be applied to fix a blocking issue):
 ```
 tar xf dpdk-21.11.tar.xz 
@@ -98,7 +95,7 @@ meson -Dexamples=pipeline  build
 ninja -C build
 ninja -C build install
 ```
-Set the DPDK_ROOT environment variable to the root directory of the *dpdk* code base.
+Set the DPDK_PIPELINE_BIN environment variable to the absolute path of the dpdk-pipeline application.
 ### Build BMv2
 
 ### Build OVS

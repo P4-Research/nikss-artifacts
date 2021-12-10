@@ -15,7 +15,7 @@ function print_help() {
   echo "-q|--queues        Set number of RX/TX queues per NIC (default 1)."
   echo "-C|--core          CPU core that will be pinned to interfaces."
   echo "--p4args           P4ARGS for PSA-eBPF."
-  echo "--target           target subsystem (default empty, possible values: p4c-ebpf, dpdk)"
+  echo "--target           target subsystem (default empty, possible values: psa-ebpf, p4-dpdk)"
   echo "--help             Print this message."
   echo ""
   echo "PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)"
@@ -122,7 +122,7 @@ ip link show psa_recirc
 declare -a RECIRC_PORT_ID=$(ip -o link | awk '$2 == "psa_recirc:" {print $1}' | awk -F':' '{print $1}')
 
 # Trace all command from this point
-#set -x
+set -x
 
 declare -a ARGS="-DPSA_PORT_RECIRCULATE=$RECIRC_PORT_ID"
 
@@ -151,7 +151,7 @@ EOC
   echo ""
 }
 
-if [[ $PROGRAM == *.p4 && $TARGET == "dpdk" ]]; then
+if [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
   $P4C_DPDK_BIN $P4ARGS --arch psa -o out.spec "$PROGRAM"
   exit_on_error

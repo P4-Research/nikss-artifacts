@@ -89,10 +89,11 @@ Set the P4C_DPDK_REPO environment variable to the root directory of the *p4c* co
 ```
 $P4C_DPDK_REPO/build/backends/dpdk/p4c-dpdk
 ```
--  Download [DPDK 21.11.0](https://fast.dpdk.org/rel/dpdk-21.11.tar.xz) and install the required dependencies as indicated in the [DPDK documentatio](https://doc.dpdk.org/guides/linux_gsg/sys_reqs.html#compilation-of-the-dpdk). Build DPDK along with DPDK Software Switch (SWX) pipeline application as follows:
+-  Download [DPDK 21.11.0](https://fast.dpdk.org/rel/dpdk-21.11.tar.xz) and install the required dependencies as indicated in the [DPDK documentatio](https://doc.dpdk.org/guides/linux_gsg/sys_reqs.html#compilation-of-the-dpdk). Build DPDK along with DPDK Software Switch (SWX) pipeline application as follows (a patch needs to be applied to fix a blocking issue):
 ```
 tar xf dpdk-21.11.tar.xz 
 cd dpdk-21.11
+patch -p1 < ${PSA-EBPF-ARTIFACTS}/patches/dpdk-fix-annotation-checks.patch
 meson -Dexamples=pipeline  build
 ninja -C build
 ninja -C build install

@@ -1,0 +1,9 @@
+#!/usr/bin/expect
+
+spawn telnet 0.0.0.0 8086
+expect -re "pipeline>"
+
+while {[gets stdin line] >= 0} {
+    send "$line\r"
+    expect -re "pipeline>"
+}

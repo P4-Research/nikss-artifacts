@@ -1,0 +1,13 @@
+psabpf-ctl table add pipe 99 ingress_tbl_ingress_vlan id 1 key $PORT0_INDEX 0 data 1
+psabpf-ctl table add pipe 99 ingress_tbl_ingress_vlan id 1 key $PORT1_INDEX 0 data 1
+
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC0 1 data $PORT0_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC1 1 data $PORT1_INDEX
+
+psabpf-ctl table add pipe 99 ingress_tbl_routable id 0 key 00:00:00:00:00:01 1
+
+psabpf-ctl table add pipe 99 ingress_tbl_routing id 1 key 10.0.0.2/32 data $DUT_MAC1 $GENERATOR_MAC1 1
+psabpf-ctl table add pipe 99 ingress_tbl_routing id 1 key 10.0.0.1/32 data $DUT_MAC0 $GENERATOR_MAC0 1
+
+psabpf-ctl table add pipe 99 egress_tbl_vlan_egress id 1 key $PORT1_INDEX
+psabpf-ctl table add pipe 99 egress_tbl_vlan_egress id 1 key $PORT0_INDEX

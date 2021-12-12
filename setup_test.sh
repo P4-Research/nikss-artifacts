@@ -153,6 +153,7 @@ for intf in "${INTERFACES[@]}" ; do
   sysctl -w net.ipv6.conf."$intf".accept_ra=0
 
   ifconfig "$intf" promisc
+  ifconfig "$intf" mtu 1600 up
   ethtool -L "$intf" combined $NUM_QUEUES
   ethtool -G "$intf" tx 4096
   ethtool -G "$intf" rx 4096

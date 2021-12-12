@@ -31,7 +31,7 @@ $ sudo ./scripts/setup_netperf.sh
 Then, to run Netperf test:
 
 ```
-sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
+sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -l 180 -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
 ```
 
 ## DUT machine

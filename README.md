@@ -302,7 +302,7 @@ Replace `<SCRIPT>` with:
 
 ### 05. Comparison with other host-based P4 platforms
 
-### 06. Comparison with other software switches
+### 06. Comparison with other software switches (throughput)
 
 #### Run PSA-eBPF
 
@@ -362,6 +362,28 @@ On the Generator machine use:
 Replace `<PROFILE>` with:
 - `stl/bench.py` for L2FWD and VXLAN (encap)
 - `trex_scripts/udp_1flow.py` for L2L3-ACL
+
+### 06. Comparison with other software switches (latency)
+
+#### Run PSA-eBPF (TC)
+
+```
+$ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c runtime_cmd/06_software_switching/l2l3_acl_latency.txt p4testdata/06_software_switching/l2l3_acl_simple.p4
+```
+
+#### Run PSA-eBPF (XDP)
+
+```
+$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --hdr2Map --max-ternary-masks 3 --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/06_software_switching/l2l3_acl_latency.txt p4testdata/06_software_switching/l2l3_acl_simple.p4
+```
+
+#### Run Netperf
+
+On Generator machine:
+
+```
+$ sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -l 180 -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
+```
 
 ### 07. Multi-queue scaling
 

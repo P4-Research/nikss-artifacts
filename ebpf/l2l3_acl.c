@@ -323,7 +323,6 @@ int xdp_func(struct xdp_md *ctx)
     if (vlan_id != NULL) {
         vlanhdr_vlan_id = *vlan_id;
     }
-
     struct routable_key k_routable = {
         .vlan_id = vlanhdr_vlan_id,
     };
@@ -336,7 +335,6 @@ int xdp_func(struct xdp_md *ctx)
         k_routing.addr = ip_daddr;
         struct routing_val *val = bpf_map_lookup_elem(&routing, &k_routing);
         if (val != NULL) {
-            iphdr->ttl -= 1;
             __builtin_memcpy(eth->h_source, val->src_addr, ETH_ALEN);
             __builtin_memcpy(eth->h_dest, val->dst_addr, ETH_ALEN);
             vlanhdr_vlan_id = val->vlan_id;

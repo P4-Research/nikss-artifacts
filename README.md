@@ -377,6 +377,18 @@ $ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3" -E <EN
 $ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --hdr2Map --max-ternary-masks 3 --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/06_software_switching/l2l3_acl_latency.txt p4testdata/06_software_switching/l2l3_acl_simple.p4
 ```
 
+#### Run OVS
+
+```
+$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/06_software_switching/ovs_l2l3_acl_latency.sh  openvswitch
+```
+
+#### Run native eBPF/XDP
+
+```
+$ sudo -E ./setup_test.sh -C 6 -E env/pllab.env -c runtime_cmd/06_software_switching/ebpf_l2l3_latency.txt ebpf/l2l3_acl.c
+```
+
 #### Run Netperf
 
 On Generator machine:

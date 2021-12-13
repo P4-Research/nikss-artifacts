@@ -53,3 +53,5 @@ function build_and_install_bmv2() (
 build_and_install_thrift
 build_and_install_nanomsg
 build_and_install_bmv2
+
+sudo ldconfig

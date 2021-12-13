@@ -15,7 +15,7 @@ function print_help() {
   echo "-q|--queues        Set number of RX/TX queues per NIC (default 1)."
   echo "-C|--core          CPU core that will be pinned to interfaces."
   echo "--p4args           P4ARGS for PSA-eBPF."
-  echo "--target           target subsystem (default empty, possible values: psa-ebpf, p4-dpdk)"
+  echo "--target           target subsystem (default empty, possible values: psa-ebpf, p4-dpdk, bmv2-psa)"
   echo "--help             Print this message."
   echo ""
   echo "PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)"
@@ -36,7 +36,8 @@ function exit_on_error() {
 
 function cleanup() {
     killall dpdk-pipeline
-    rm nohup.out out.spec
+    killall psa_switch
+    rm -f nohup.out out.spec out.json
     rm -f xdp_loader
     bash $OVS_REPO/utilities/ovs-ctl stop
     ip link del psa_recirc
@@ -151,7 +152,23 @@ EOC
   echo ""
 }
 
-if [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
+if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
+  echo "Compiling data plane program.. $PROGRAM"
+  $P4C_BMV2_PSA_BIN $P4ARGS --std p4-16 -o out.json "$PROGRAM"
+  exit_on_error
+  echo "Starting switch.."
+  nohup psa_switch -i "0@$PORT0_NAME" -i "1@$PORT1_NAME" out.json &
+  echo "Installing table entries.. Looking for $COMMANDS_FILE"
+  if [ -n "$COMMANDS_FILE" ]; then
+    cat $COMMANDS_FILE
+    wait-for-it 127.0.0.1:9090 -t 10
+    psa_switch_CLI < "$COMMANDS_FILE"
+    echo "Table entries successfully installed!"
+  else
+    echo "File with table entries not provided"
+  fi
+  exit 0
+elif [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
   $P4C_DPDK_BIN $P4ARGS --arch psa -o out.spec "$PROGRAM"
   exit_on_error
@@ -161,7 +178,7 @@ if [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
     ./scripts/dpdk_pipeline_send_cmd < "$COMMANDS_FILE"
     echo -e "\nTable entries successfully installed!"
   else
-     echo "File with table entries not provided"
+    echo "File with table entries not provided"
   fi
   exit 0
 elif [[ $PROGRAM == *.p4 ]]; then

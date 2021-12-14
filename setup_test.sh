@@ -158,16 +158,15 @@ if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   exit_on_error
   echo "Starting switch.."
   nohup psa_switch -i "0@$PORT0_NAME" -i "1@$PORT1_NAME" out.json &
-  echo "Installing table entries.. Looking for $COMMANDS_FILE"
+  wait-for-it 127.0.0.1:9090 -t 10
+  echo "BMv2 PSA started!"
   if [ -n "$COMMANDS_FILE" ]; then
-    cat $COMMANDS_FILE
-    wait-for-it 127.0.0.1:9090 -t 10
-    psa_switch_CLI < "$COMMANDS_FILE"
-    echo "Table entries successfully installed!"
-  else
-    echo "File with table entries not provided"
+      tmpfile=$(mktemp)
+      cat $COMMANDS_FILE | envsubst > $tmpfile
+      psa_switch_CLI < $tmpfile
+      rm $tmpfile
+      echo -e "\nTable entries successfully installed!"
   fi
-  exit 0
 elif [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
   $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" --arch psa -o out.spec "$PROGRAM"
@@ -219,7 +218,7 @@ for intf in "${INTERFACES[@]}" ; do
   ethtool -K "$intf" rxvlan off
   ethtool -A "$intf" rx off tx off
 
-  if [[ $PROGRAM == *.p4 ]]; then
+  if [[ $PROGRAM == *.p4 && $TARGET == "psa-ebpf" ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
   elif [[ $PROGRAM == *.c && $TARGET == "psa-ebpf" ]]; then
       psabpf-ctl pipeline add-port id 99 "$intf"
@@ -231,8 +230,13 @@ for intf in "${INTERFACES[@]}" ; do
   bash scripts/set_irq_affinity.sh $CORE "$intf"
 done
 
+if [[ $TARGET == "p4-dpdk" || $TARGET == "bmv2-psa"  ]]; then
+    # no need to proceed further
+    exit 0
+fi
+
 echo "Installing table entries.. Looking for $COMMANDS_FILE"
-if [ -n "$COMMANDS_FILE" ]; then
+if [[ -n "$COMMANDS_FILE" ]]; then
    cat $COMMANDS_FILE
    bash $COMMANDS_FILE
    echo -e "\nTable entries successfully installed!"

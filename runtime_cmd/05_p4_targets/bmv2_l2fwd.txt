@@ -1,0 +1,1 @@
+table_add ingress.tbl_fwd do_forward $GENERATOR_MAC1 => 1

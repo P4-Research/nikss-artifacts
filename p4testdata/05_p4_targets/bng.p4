@@ -258,6 +258,9 @@ control packet_deparser(packet_out packet, out empty_metadata_t clone_i2e_meta, 
 control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in psa_ingress_input_metadata_t standard_metadata,
                 inout psa_ingress_output_metadata_t ostd) {
 
+    Counter<bit<32>, bit<32>>(BNG_MAX_SUBSC, PSA_CounterType_t.PACKETS) c_line_rx;
+    Counter<bit<32>, bit<32>>(BNG_MAX_SUBSC, PSA_CounterType_t.PACKETS) c_terminated;
+    Counter<bit<32>, bit<32>>(BNG_MAX_SUBSC, PSA_CounterType_t.PACKETS) c_dropped;
     Counter<bit<32>, bit<32>>(BNG_MAX_SUBSC, PSA_CounterType_t.PACKETS) c_control;
 
     action deny() {
@@ -427,6 +430,7 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
     action term_enabled(bit<16> eth_type) {
         hdr.eth_type.value = eth_type;
         hdr.pppoe.setInvalid();
+        c_terminated.count(local_metadata.bng.line_id);
     }
 
     action term_disabled() {
@@ -455,10 +459,12 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
     action set_session(bit<16> pppoe_session_id) {
         local_metadata.bng.type = BNG_TYPE_DOWNSTREAM;
         local_metadata.bng.pppoe_session_id = pppoe_session_id;
+        c_line_rx.count(local_metadata.bng.line_id);
     }
 
     action drop() {
         local_metadata.bng.type = BNG_TYPE_DOWNSTREAM;
+        c_line_rx.count(local_metadata.bng.line_id);
         ingress_drop(ostd);
     }
 
@@ -521,6 +527,28 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
             if(t_pppoe_cp.apply().hit) {
                 return;
             }
+
+            if (hdr.ipv4.isValid()) {
+                switch(t_pppoe_term_v4.apply().action_run) {
+                    term_disabled: {
+                        c_dropped.count(local_metadata.bng.line_id);
+                    }
+                }
+            }
+        } else {
+            // downstream
+            if (t_line_session_map.apply().hit) {
+                if (hdr.ipv4.isValid()) {
+                    switch (t_qos_v4.apply().action_run) {
+                        qos_prio: {
+                            //local_metadata.bng.ds_meter_result = m_prio.execute(local_metadata.bng.line_id);
+                        }
+                        qos_besteff: {
+                            //local_metadata.bng.ds_meter_result = m_besteff.execute(local_metadata.bng.line_id);
+                        }
+                    }
+                }
+            }
         }
 
         if (!ostd.drop) {
@@ -537,6 +565,8 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
 }
 
 control egress(inout headers_t hdr, inout local_metadata_t local_metadata, in psa_egress_input_metadata_t istd, inout psa_egress_output_metadata_t ostd) {
+
+    Counter<bit<32>, bit<32>>(BNG_MAX_SUBSC, PSA_CounterType_t.PACKETS) c_line_tx;
 
     action push_outer_vlan() {
         // If VLAN is already valid, we overwrite it with a potentially new VLAN
@@ -589,6 +619,7 @@ control egress(inout headers_t hdr, inout local_metadata_t local_metadata, in ps
         hdr.pppoe.type_id = 4w1;
         hdr.pppoe.code = 8w0; // 0 means session stage.
         hdr.pppoe.session_id = hdr.bmd.pppoe_session_id;
+        c_line_tx.count(local_metadata.bng.line_id);
     }
 
     action encap_v4() {

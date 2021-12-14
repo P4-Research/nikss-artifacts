@@ -157,8 +157,10 @@ if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   $P4C_BMV2_PSA_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/bmv2" --std p4-16 -o out.json "$PROGRAM"
   exit_on_error
   echo "Starting switch.."
-  nohup psa_switch -i "0@$PORT0_NAME" -i "1@$PORT1_NAME" out.json &
+  psa_switch -i "0@$PORT0_NAME" -i "1@$PORT1_NAME" out.json &
   wait-for-it 127.0.0.1:9090 -t 10
+  PID=$(pgrep -o -x psa_switch)
+  taskset -a -cp $CORE $PID
   echo "BMv2 PSA started!"
   if [ -n "$COMMANDS_FILE" ]; then
       tmpfile=$(mktemp)

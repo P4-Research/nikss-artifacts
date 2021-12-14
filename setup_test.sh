@@ -154,7 +154,7 @@ EOC
 
 if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
-  $P4C_BMV2_PSA_BIN $P4ARGS --std p4-16 -o out.json "$PROGRAM"
+  $P4C_BMV2_PSA_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/bmv2" --std p4-16 -o out.json "$PROGRAM"
   exit_on_error
   echo "Starting switch.."
   nohup psa_switch -i "0@$PORT0_NAME" -i "1@$PORT1_NAME" out.json &
@@ -170,7 +170,7 @@ if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   exit 0
 elif [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
-  $P4C_DPDK_BIN $P4ARGS --arch psa -o out.spec "$PROGRAM"
+  $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" --arch psa -o out.spec "$PROGRAM"
   exit_on_error
   dpdk_init_pipeline
   echo "Installing table entries.. Looking for $COMMANDS_FILE"

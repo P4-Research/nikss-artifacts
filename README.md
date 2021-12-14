@@ -85,7 +85,7 @@ cmake ..
 make -j4 p4c-dpdk
 ```
 **Do not run** ***'make install'*** otherwise the previously installed PSA-EBPF compiler will be overwritten.
-Set the P4C_DPDK_BIN environment variable to the absolute path of the p4c-dpdk compiler.
+Set the `UPSTREAM_P4C_REPO` environment variable to the absolute path of the p4c repository.
 -  Download [DPDK 21.11.0](https://fast.dpdk.org/rel/dpdk-21.11.tar.xz) and install the required dependencies as indicated in the [DPDK documentatio](https://doc.dpdk.org/guides/linux_gsg/sys_reqs.html#compilation-of-the-dpdk). Build DPDK along with DPDK Software Switch (SWX) pipeline application as follows (a patch needs to be applied to fix a blocking issue):
 ```
 tar xf dpdk-21.11.tar.xz 
@@ -104,6 +104,7 @@ To build and install BMv2 execute `script/setup_bmv2.sh` from directory where yo
 To build P4 compiler for BMv2 (if you build p4-dpdk before you can execute only last instruction from `build` directory):
 ```shell
 git clone --recursive https://github.com/p4lang/p4c.git
+cd p4c
 mkdir build
 cd build
 cmake ..
@@ -112,7 +113,7 @@ make "-j$(nproc)" p4c-bm2-psa
 
 **Do not run** ***'make install'*** otherwise the previously installed PSA-EBPF compiler will be overwritten.
 
-Set the `P4C_BMV2_PSA_BIN` environment variable to the absolute path of the `p4c-bm2-psa` executable.
+Set the `UPSTREAM_P4C_REPO` environment variable to the absolute path of the p4c repository.
 
 ### Build OVS
 

@@ -45,7 +45,7 @@ function build_and_install_bmv2() (
   cd behavioral-model/
   ./autogen.sh
   # For better performance disable logging macros
-  ./configure --disable-logging-macros
+  ./configure 'CXXFLAGS=-g -O3' 'CFLAGS=-g -O3' --disable-logging-macros --disable-elogger
   make "-j$(nproc)"
   sudo make install
 )

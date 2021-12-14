@@ -163,26 +163,39 @@ Run PSA-eBPF.
 - L2FWD program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
 ```
 
 - L2L3-ACL program and routing rules on DUT machine: 
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ```
 
-- BNG program on DUT machine:
+- BNG (encap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
 ```
 
-- UPF program on DUT machine:
+- BNG (decap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_ul.txt p4testdata/01_use_cases/bng.p4
 ```
+
+- UPF (encap) program on DUT machine:
+
+```
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
+```
+
+- UPF (decap) program on DUT machine:
+
+```
+sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_ul.txt p4testdata/01_use_cases/upf.p4
+```
+
 
 #### Run TRex
 
@@ -196,7 +209,7 @@ For each program, run the NDR script and tune `size=` parameter accordingly (use
 - for UPF: 
   - uplink: `--profile trex_scripts/upf_ul.py`
   - downlink: `--profile stl/bench.py`
-- for L2L3-ACL: `--profile trex_scripts/udp_1flow.py`
+- for L2L3-ACL: `--profile trex_scripts/udp_1flow.py --prof-tun packet_len=X`
 - for BNG:
   - uplink: `--profile trex_scripts/bng_ul.py`
   - downlink: `--profile stl/bench.py`

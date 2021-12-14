@@ -2,5 +2,6 @@
 out.c
 *.o
 nohup.out
+out.json
 out.spec
 xdp_loader

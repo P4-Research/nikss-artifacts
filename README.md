@@ -332,6 +332,17 @@ Replace `<SCRIPT>` with:
 
 ### 05. Comparison with other host-based P4 platforms
 
+#### Run BMv2 
+
+```
+$ sudo -E ./setup_test.sh --target bmv2-psa -C 6 -E <ENV-FILE> -c <SCRIPT> <PROGRAM>
+```
+
+Replace `<SCRIPT>` with:
+- `runtime_cmd/05_p4_targets/bmv2_l2fwd.txt` for L2FWD
+
+Replace `<PROGRAM>` with:
+- `p4testdata/05_p4_targets/l2fwd.p4` for L2FWD
 ### 06. Comparison with other software switches (throughput)
 
 #### Run PSA-eBPF

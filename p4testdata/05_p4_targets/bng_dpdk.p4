@@ -431,7 +431,7 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
     action term_enabled(bit<16> eth_type) {
         hdr.eth_type.value = eth_type;
         hdr.pppoe.setInvalid();
-        c_terminated.count(local_metadata.bng.line_id);
+        c_terminated.count(local_metadata.bng.line_id, (bit<32>)hdr.ipv4.total_len);
     }
 
     action term_disabled() {
@@ -460,12 +460,12 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
     action set_session(bit<16> pppoe_session_id) {
         local_metadata.bng.type = BNG_TYPE_DOWNSTREAM;
         local_metadata.bng.pppoe_session_id = pppoe_session_id;
-        c_line_rx.count(local_metadata.bng.line_id);
+        c_line_rx.count(local_metadata.bng.line_id, (bit<32>)hdr.ipv4.total_len);
     }
 
     action drop() {
         local_metadata.bng.type = BNG_TYPE_DOWNSTREAM;
-        c_line_rx.count(local_metadata.bng.line_id);
+        c_line_rx.count(local_metadata.bng.line_id, (bit<32>)hdr.ipv4.total_len);
         ingress_drop(ostd);
     }
 
@@ -532,7 +532,7 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
             if (hdr.ipv4.isValid()) {
                 switch(t_pppoe_term_v4.apply().action_run) {
                     term_disabled: {
-                        c_dropped.count(local_metadata.bng.line_id);
+                        c_dropped.count(local_metadata.bng.line_id, (bit<32>)hdr.ipv4.total_len);
                     }
                 }
             }
@@ -542,10 +542,10 @@ control ingress(inout headers_t hdr, inout local_metadata_t local_metadata, in p
                 if (hdr.ipv4.isValid()) {
                     switch (t_qos_v4.apply().action_run) {
                         qos_prio: {
-                            local_metadata.bng.ds_meter_result = m_prio.execute(index = local_metadata.bng.line_id);
+                            local_metadata.bng.ds_meter_result = m_prio.execute(index = local_metadata.bng.line_id, pkt_len = (bit<32>)hdr.ipv4.total_len);
                         }
                         qos_besteff: {
-                            local_metadata.bng.ds_meter_result = m_besteff.execute(index = local_metadata.bng.line_id);
+                            local_metadata.bng.ds_meter_result = m_besteff.execute(index = local_metadata.bng.line_id, pkt_len = (bit<32>)hdr.ipv4.total_len);
                         }
                     }
                 }
@@ -620,7 +620,7 @@ control egress(inout headers_t hdr, inout local_metadata_t local_metadata, in ps
         hdr.pppoe.type_id = 4w1;
         hdr.pppoe.code = 8w0; // 0 means session stage.
         hdr.pppoe.session_id = hdr.bmd.pppoe_session_id;
-        c_line_tx.count(local_metadata.bng.line_id);
+        c_line_tx.count(local_metadata.bng.line_id, (bit<32>)hdr.ipv4.total_len);
     }
 
     action encap_v4() {

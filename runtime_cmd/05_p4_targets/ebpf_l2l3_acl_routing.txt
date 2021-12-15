@@ -1,0 +1,19 @@
+mac0="${GENERATOR_MAC0//:/}"
+mac1="${GENERATOR_MAC1//:/}"
+dut_mac1="${DUT_MAC1//:/}"
+mac0=$(echo "$mac0"|fold -w2|tac|tr -d "\n"|fold -w2)
+mac1=$(echo "$mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+dut_mac1=$(echo "$dut_mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+
+psabpf-ctl table add pipe 99 ingress_tbl_ingress_vlan id 1 key $PORT0_INDEX 0
+
+psabpf-ctl table add pipe 99 ingress_tbl_routable id 0 key 00:00:00:00:00:01 0
+
+psabpf-ctl table add pipe 99 ingress_tbl_routing id 1 key 48.0.0.0/24 data $dut_mac1 $mac1 0
+
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC0 0 data $PORT0_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC1 0 data $PORT1_INDEX
+
+psabpf-ctl table add pipe 99 ingress_tbl_acl id 0 key 16.0.0.1 48.0.0.1 17 1025 12
+
+psabpf-ctl table add pipe 99 egress_tbl_vlan_egress id 1 key $PORT1_INDEX

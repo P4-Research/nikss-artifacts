@@ -1,0 +1,19 @@
+mac0="${GENERATOR_MAC0//:/}"
+mac1="${GENERATOR_MAC1//:/}"
+dut_mac1="${DUT_MAC1//:/}"
+mac0=$(echo "$mac0"|fold -w2|tac|tr -d "\n"|fold -w2)
+mac1=$(echo "$mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+dut_mac1=$(echo "$dut_mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+
+table_add ingress.tbl_ingress_vlan push_vlan $PORT0_INDEX 0 => 0
+
+table_add ingress.tbl_routable NoAction 00:00:00:00:00:01 0
+
+table_add ingress.tbl_routing set_nexthop 48.0.0.0/24 => $dut_mac1 $mac1 0
+
+table_add ingress.tbl_switching forward $GENERATOR_MAC0 => $PORT0_INDEX
+table_add ingress.tbl_switching forward $GENERATOR_MAC1 => $PORT1_INDEX
+
+table_add ingress.tbl_acl NoAction 16.0.0.1 48.0.0.1 17 1025 12
+
+table_add egress.tbl_vlan_egress strip_vlan $PORT1_INDEX

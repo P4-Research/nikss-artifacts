@@ -2,8 +2,6 @@
 
 table_add ingress.ingress_port_vlan permit $PORT0_INDEX 10^0xff 100^0xff 1 => 1
 table_add egress.egress_vlan pop_vlan 100 $PORT1_INDEX
-#psabpf-ctl table add pipe 99 ingress_ingress_port_vlan id 2 key $PORT0_INDEX 10^0xff 100^0xff 1 data 1
-#psabpf-ctl table add pipe 99 egress_egress_vlan id 2 key 100 $PORT1_INDEX
 
 table_add ingress.fwd_classifier set_forwarding_type GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0^0 => 2
 table_add ingress.routing_v4 route 192.168.2.0/24 => $PORT1_INDEX $DUT_MAC1 $GENERATOR_MAC1

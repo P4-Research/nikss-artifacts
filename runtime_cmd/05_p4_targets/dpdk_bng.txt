@@ -1,0 +1,33 @@
+mac0="${GENERATOR_MAC0//:/}"
+mac1="${GENERATOR_MAC1//:/}"
+dut_mac1="${DUT_MAC1//:/}"
+mac0=$(echo "$mac0"|fold -w2|tac|tr -d "\n"|fold -w2)
+mac1=$(echo "$mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+dut_mac1=$(echo "$dut_mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
+PIPELINE0=0
+
+# Uplink
+
+pipeline PIPELINE0 table ingress_port_vlan rule add match $PORT0_INDEX 10^0xff 100^0xff 1 action permit port_type 1
+pipeline PIPELINE0 table egress_vlan rule add match 100 $PORT1_INDEX action pop_vlan
+
+pipeline PIPELINE0 table fwd_classifier rule add match GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0^0 action set_forwarding_type 2
+pipeline PIPELINE0 table routing_v4 rule add match 192.168.2.0/24 action route port_num $PORT1_INDEX smac $DUT_MAC1 dmac $GENERATOR_MAC1
+pipeline PIPELINE0 table next_vlan rule add match $PORT1_INDEX action NoAction
+pipeline PIPELINE0 table t_line_map rule add match 10 100 action set_line line_id 99
+pipeline PIPELINE0 table t_pppoe_term_v4 rule add match 99 10.10.10.10 100 action term_enabled_v4
+
+# Downlink
+
+pipeline PIPELINE0 table ingress_port_vlan rule add match $PORT0_INDEX 0^0 0^0 0 action permit_with_internal_vlan vlan_id 3 port_type 1
+pipeline PIPELINE0 table egress_vlan rule add match 3 $PORT1_INDEX action pop_vlan
+
+pipeline PIPELINE0 table fwd_classifier rule add match $GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0x0800 action set_forwarding_type 2
+pipeline PIPELINE0 table routing_v4 rule add match 48.0.0.0/24 action route port_num $PORT1_INDEX smac $DUT_MAC1 dmac $GENERATOR_MAC1
+pipeline PIPELINE0 table next_vlan rule add match $PORT1_INDEX action set_double_vlan outer_vlan_id 10 inner_vlan_id 100
+pipeline PIPELINE0 table t_line_map rule add match 10 100 action set_line line_id 99
+pipeline PIPELINE0 table t_line_session_map rule add match 99 action set_session pppoe_session_id 64
+
+# high value; don't limit rate
+pipeline PIPELINE0 meter profile platinum add cir 46000000 pir 138000000 cbs 1000000 pbs 1000000
+pipeline PIPELINE0 meter m_besteff from 0 to 100 set profile platinum

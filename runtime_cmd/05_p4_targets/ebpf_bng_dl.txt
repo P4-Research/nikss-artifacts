@@ -1,14 +1,3 @@
-# Uplink
-
-psabpf-ctl table add pipe 99 ingress_ingress_port_vlan id 2 key $PORT0_INDEX 10^0xff 100^0xff 1 data 1
-psabpf-ctl table add pipe 99 egress_egress_vlan id 2 key 100 $PORT1_INDEX
-
-psabpf-ctl table add pipe 99 ingress_fwd_classifier id 1 key $GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0^0 data 2
-psabpf-ctl table add pipe 99 ingress_routing_v4 id 1 key 192.168.2.0/24 data $PORT1_INDEX $DUT_MAC1 $GENERATOR_MAC1
-psabpf-ctl table add pipe 99 ingress_next_vlan id 0 key $PORT1_INDEX
-psabpf-ctl table add pipe 99 ingress_t_line_map id 1 key 10 100 data 99
-psabpf-ctl table add pipe 99 ingress_t_pppoe_term_v4 id 1 key 99 10.10.10.10 100
-
 # Downlink
 
 psabpf-ctl table add pipe 99 ingress_ingress_port_vlan id 3 key $PORT0_INDEX 0^0 0^0 0 data 3 1

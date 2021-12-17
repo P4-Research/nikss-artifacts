@@ -1,14 +1,3 @@
-# Uplink
-
-table_add ingress.ingress_port_vlan permit $PORT0_INDEX 10^0xff 100^0xff 1 => 1
-table_add egress.egress_vlan pop_vlan 100 $PORT1_INDEX
-
-table_add ingress.fwd_classifier set_forwarding_type GENERATOR_MAC1^0xffffffffffff $PORT0_INDEX 0^0 0^0 => 2
-table_add ingress.routing_v4 route 192.168.2.0/24 => $PORT1_INDEX $DUT_MAC1 $GENERATOR_MAC1
-table_add ingress.next_vlan NoAction $PORT1_INDEX
-table_add ingress.t_line_map set_line 10 100 => 99
-table_add ingress.t_pppoe_term_v4 term_enabled_v4 99 10.10.10.10 100
-
 # Downlink
 
 table_add ingress.ingress_port_vlan permit_with_internal_vlan $PORT0_INDEX 0^0 0^0 0 => 3 1

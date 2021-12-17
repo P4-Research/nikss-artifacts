@@ -38,11 +38,6 @@ header ipv4_t {
     bit<32> dst_addr;
 }
 
-header l4_port_t {
-    bit<16> sport;
-    bit<16> dport;
-}
-
 header tcp_t {
     bit<16> sport;
     bit<16> dport;
@@ -68,21 +63,19 @@ header bridged_md_t {
     bit<32> ingress_port;
 }
 
-struct local_metadata_t {
-    bit<16>            l4_sport;
-    bit<16>            l4_dport;
-}
-
 struct headers_t {
     bridged_md_t bridged_meta;
     ethernet_t ethernet;
     vlan_tag_t vlan_tag;
     ipv4_t ipv4;
-    l4_port_t l4_port;
     tcp_t  tcp;
     udp_t  udp;
 }
 
+struct local_metadata_t {
+    bit<16>            l4_sport;
+    bit<16>            l4_dport;
+}
 
 parser packet_parser(packet_in packet, out headers_t headers, inout local_metadata_t local_metadata, in psa_ingress_parser_input_metadata_t standard_metadata, in empty_metadata_t resub_meta, in empty_metadata_t recirc_meta) {
     InternetChecksum() ck;
@@ -110,9 +103,9 @@ parser packet_parser(packet_in packet, out headers_t headers, inout local_metada
     state parse_ipv4 {
         packet.extract(headers.ipv4);
 
-        //ck.subtract(headers.ipv4.hdr_checksum);
-        //ck.subtract({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
-        //headers.ipv4.hdr_checksum = ck.get();
+        ck.subtract(headers.ipv4.hdr_checksum);
+        ck.subtract({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
+        headers.ipv4.hdr_checksum = ck.get();
 
         transition select(headers.ipv4.protocol) {
             PROTO_TCP: parse_tcp;
@@ -122,30 +115,31 @@ parser packet_parser(packet_in packet, out headers_t headers, inout local_metada
     }
 
     state parse_tcp {
-        packet.extract(headers.l4_port);
         packet.extract(headers.tcp);
+        local_metadata.l4_sport = headers.tcp.sport;
+        local_metadata.l4_dport = headers.tcp.dport;
         transition accept;
     }
 
     state parse_udp {
-        packet.extract(headers.l4_port);
         packet.extract(headers.udp);
+        local_metadata.l4_sport = headers.udp.sport;
+        local_metadata.l4_dport = headers.udp.dport;
         transition accept;
     }
 }
 
 control packet_deparser(packet_out packet, out empty_metadata_t clone_i2e_meta, out empty_metadata_t resubmit_meta, out empty_metadata_t normal_meta, inout headers_t headers, in local_metadata_t local_metadata, in psa_ingress_output_metadata_t istd) {
-    //InternetChecksum() ck;
+    InternetChecksum() ck;
     apply {
-        //ck.subtract(headers.ipv4.hdr_checksum);
-        //ck.add({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
-        //headers.ipv4.hdr_checksum = ck.get();
+        ck.subtract(headers.ipv4.hdr_checksum);
+        ck.add({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
+        headers.ipv4.hdr_checksum = ck.get();
 
         packet.emit(headers.bridged_meta);
         packet.emit(headers.ethernet);
         packet.emit(headers.vlan_tag);
         packet.emit(headers.ipv4);
-        packet.emit(headers.l4_port);
         packet.emit(headers.tcp);
         packet.emit(headers.udp);
     }
@@ -230,8 +224,8 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
             headers.ipv4.src_addr : exact;
             headers.ipv4.dst_addr : exact;
             headers.ipv4.protocol : exact;
-            headers.l4_port.sport : exact;
-            headers.l4_port.dport : exact;
+            local_metadata.l4_sport : exact;
+            local_metadata.l4_dport : exact;
         }
 
         actions = {

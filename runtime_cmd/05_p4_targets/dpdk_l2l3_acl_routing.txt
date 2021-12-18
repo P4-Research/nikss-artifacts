@@ -1,20 +1,7 @@
-mac0="${GENERATOR_MAC0//:/}"
-mac1="${GENERATOR_MAC1//:/}"
-dut_mac1="${DUT_MAC1//:/}"
-mac0=$(echo "$mac0"|fold -w2|tac|tr -d "\n"|fold -w2)
-mac1=$(echo "$mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
-dut_mac1=$(echo "$dut_mac1"|fold -w2|tac|tr -d "\n"|fold -w2)
-PIPELINE0=0
-
-pipeline PIPELINE0 table tbl_ingress_vlan rule add match PORT0_INDEX 0 action push_vlan vlan_id 0
-
-pipeline PIPELINE0 table tbl_routable rule add match 00:00:00:00:00:01 0 action NoAction
-
-pipeline PIPELINE0 table tbl_routing rule add match 48.0.0.0/24 action set_nexthop smac $dut_mac1 dmac $mac1 vlan_id 0
-
-pipeline PIPELINE0 table tbl_switching rule add match $GENERATOR_MAC0 action forward output_port $PORT0_INDEX
-pipeline PIPELINE0 table tbl_switching rule add match $GENERATOR_MAC1 action forward output_port $PORT1_INDEX
-
-pipeline PIPELINE0 table tbl_acl rule add match 16.0.0.1 48.0.0.1 17 1025 12 action NoAction
-
-pipeline PIPELINE0 table tbl_vlan_egress rule add match $PORT1_INDEX action strip_vlan
+pipeline PIPELINE0 table tbl_ingress_vlan add runtime_cmd/05_p4_targets/dpdk_l2l3/ingress_vlan.txt
+pipeline PIPELINE0 table tbl_routable add runtime_cmd/05_p4_targets/dpdk_l2l3/routable.txt
+pipeline PIPELINE0 table tbl_routing add runtime_cmd/05_p4_targets/dpdk_l2l3/routing.txt
+pipeline PIPELINE0 table tbl_switching add runtime_cmd/05_p4_targets/dpdk_l2l3/switching.txt
+pipeline PIPELINE0 table tbl_acl add runtime_cmd/05_p4_targets/dpdk_l2l3/acl.txt
+pipeline PIPELINE0 table tbl_vlan_egress add runtime_cmd/05_p4_targets/dpdk_l2l3/egress_vlan.txt
+pipeline PIPELINE0 commit

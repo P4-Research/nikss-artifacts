@@ -6,7 +6,7 @@ const bit<16> ETHERTYPE_VLAN = 0x8100;
 const bit<8> PROTO_TCP = 6;
 const bit<8> PROTO_UDP = 17;
 
-typedef bit<12> vlan_id_t;
+typedef bit<16> vlan_id_t;
 typedef bit<48> ethernet_addr_t;
 
 struct empty_metadata_t {
@@ -19,8 +19,6 @@ header ethernet_t {
 }
 
 header vlan_tag_t {
-    bit<3> pri;
-    bit<1> cfi;
     vlan_id_t vlan_id;
     bit<16> eth_type;
 }
@@ -43,10 +41,7 @@ header tcp_t {
     bit<16> dport;
     bit<32> seq_no;
     bit<32> ack_no;
-    bit<4>  data_offset;
-    bit<3>  res;
-    bit<3>  ecn;
-    bit<6>  ctrl;
+    bit<16>  off_res_ecn_ctrl;
     bit<16> window;
     bit<16> checksum;
     bit<16> urgent_ptr;
@@ -78,7 +73,6 @@ struct local_metadata_t {
 }
 
 parser packet_parser(packet_in packet, out headers_t headers, inout local_metadata_t local_metadata, in psa_ingress_parser_input_metadata_t standard_metadata, in empty_metadata_t resub_meta, in empty_metadata_t recirc_meta) {
-    InternetChecksum() ck;
     state start {
         transition parse_ethernet;
     }
@@ -103,10 +97,6 @@ parser packet_parser(packet_in packet, out headers_t headers, inout local_metada
     state parse_ipv4 {
         packet.extract(headers.ipv4);
 
-        ck.subtract(headers.ipv4.hdr_checksum);
-        ck.subtract({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
-        headers.ipv4.hdr_checksum = ck.get();
-
         transition select(headers.ipv4.protocol) {
             PROTO_TCP: parse_tcp;
             PROTO_UDP: parse_udp;
@@ -130,12 +120,7 @@ parser packet_parser(packet_in packet, out headers_t headers, inout local_metada
 }
 
 control packet_deparser(packet_out packet, out empty_metadata_t clone_i2e_meta, out empty_metadata_t resubmit_meta, out empty_metadata_t normal_meta, inout headers_t headers, in local_metadata_t local_metadata, in psa_ingress_output_metadata_t istd) {
-    InternetChecksum() ck;
     apply {
-        ck.subtract(headers.ipv4.hdr_checksum);
-        ck.add({/* 16-bit word */ headers.ipv4.ttl, headers.ipv4.protocol });
-        headers.ipv4.hdr_checksum = ck.get();
-
         packet.emit(headers.bridged_meta);
         packet.emit(headers.ethernet);
         packet.emit(headers.vlan_tag);
@@ -149,6 +134,9 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
                 inout psa_ingress_output_metadata_t ostd) {
 
     Counter<bit<32>, bit<32>>(100, PSA_CounterType_t.PACKETS) in_pkts;
+    Counter<bit<32>, bit<32>>(100, PSA_CounterType_t.PACKETS) out_pkts;
+
+
 
     action push_vlan(vlan_id_t vlan_id) {
         headers.vlan_tag.setValid();
@@ -161,7 +149,6 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
 
         key = {
             standard_metadata.ingress_port : exact;
-            headers.vlan_tag.isValid():      exact;
         }
 
         actions = {
@@ -176,7 +163,7 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
             headers.vlan_tag.vlan_id : exact;
         }
 
-        actions = { NoAction; }
+        actions = { NoAction;  }
     }
 
     action drop() {
@@ -236,48 +223,20 @@ control ingress(inout headers_t headers, inout local_metadata_t local_metadata, 
         const default_action = NoAction();
     }
 
-    apply {
-        in_pkts.count((bit<32>)standard_metadata.ingress_port);
-
-        tbl_ingress_vlan.apply();
-        if (tbl_routable.apply().hit) {
-            switch (tbl_routing.apply().action_run) {
-                set_nexthop: {
-                    if (headers.ipv4.ttl == 0) {
-                        drop();
-                        exit;
-                    }
-                }
-            }
-        }
-        tbl_switching.apply();
-        tbl_acl.apply();
-        if (!ostd.drop) {
-            headers.bridged_meta.setValid();
-            headers.bridged_meta.ingress_port = (bit<32>) standard_metadata.ingress_port;
-        }
-    }
-
-}
-
-control egress(inout headers_t headers, inout local_metadata_t local_metadata, in psa_egress_input_metadata_t istd, inout psa_egress_output_metadata_t ostd) {
-
-    Counter<bit<32>, bit<32>>(100, PSA_CounterType_t.PACKETS) out_pkts;
-
     action strip_vlan() {
         headers.ethernet.ether_type = headers.vlan_tag.eth_type;
         headers.vlan_tag.setInvalid();
-        out_pkts.count((bit<32>)istd.egress_port);
+        out_pkts.count((bit<32>)ostd.egress_port);
     }
 
     action mod_vlan(vlan_id_t vlan_id) {
         headers.vlan_tag.vlan_id = vlan_id;
-        out_pkts.count((bit<32>)istd.egress_port);
+        out_pkts.count((bit<32>)ostd.egress_port);
     }
 
     table tbl_vlan_egress {
         key = {
-            istd.egress_port : exact;
+            ostd.egress_port : exact;
         }
 
         actions = {
@@ -285,48 +244,43 @@ control egress(inout headers_t headers, inout local_metadata_t local_metadata, i
             mod_vlan;
         }
 
-        psa_direct_counter = { out_pkts };
     }
 
     apply {
-        // Multicast Source Pruning
-        if (istd.packet_path == PSA_PacketPath_t.NORMAL_MULTICAST && istd.egress_port == (PortId_t) headers.bridged_meta.ingress_port) {
-            egress_drop(ostd);
+        in_pkts.count((bit<32>)standard_metadata.ingress_port);
+
+        tbl_ingress_vlan.apply();
+        if (tbl_routable.apply().hit) {
+            tbl_routing.apply();
+            if (headers.ipv4.ttl == 0) {
+                drop();
+                exit;
+            }
         }
+        tbl_switching.apply();
+        tbl_acl.apply();
         if (!ostd.drop) {
-            tbl_vlan_egress.apply();
+           tbl_vlan_egress.apply();
         }
+    }
+
+}
+
+control egress(inout headers_t headers, inout local_metadata_t local_metadata, in psa_egress_input_metadata_t istd, inout psa_egress_output_metadata_t ostd) {
+
+    apply {
     }
 }
 
 parser egress_parser(packet_in buffer, out headers_t headers, inout local_metadata_t local_metadata, in psa_egress_parser_input_metadata_t istd, in empty_metadata_t normal_meta, in empty_metadata_t clone_i2e_meta, in empty_metadata_t clone_e2e_meta) {
     state start {
-        transition parse_bridged_meta;
-    }
-
-    state parse_bridged_meta {
-        buffer.extract(headers.bridged_meta);
-        transition parse_ethernet;
-    }
-
-    state parse_ethernet {
-        buffer.extract(headers.ethernet);
-        transition select(headers.ethernet.ether_type) {
-            ETHERTYPE_VLAN : parse_vlan;
-            default: accept;
-        }
-    }
-
-    state parse_vlan {
-        buffer.extract(headers.vlan_tag);
         transition accept;
     }
+
 }
 
 control egress_deparser(packet_out packet, out empty_metadata_t clone_e2e_meta, out empty_metadata_t recirculate_meta, inout headers_t headers, in local_metadata_t local_metadata, in psa_egress_output_metadata_t istd, in psa_egress_deparser_input_metadata_t edstd) {
     apply {
-        packet.emit(headers.ethernet);
-        packet.emit(headers.vlan_tag);
     }
 }
 

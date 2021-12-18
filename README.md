@@ -369,6 +369,11 @@ Replace `<RUNTIME_CMD>` with:
 - `runtime_cmd/05_p4_targets/dpdk_upf/dpdk_upf_ul.txt` for UPF (decap)
 - `runtime_cmd/05_p4_targets/dpdk_bng_dl.txt` for BNG (encap)
 - `runtime_cmd/05_p4_targets/dpdk_bng_ul.txt` for BNG (decap)
+- `runtime_cmd/05_p4_targets/dpdk_l2l3_acl_routing.txt` for L2L3-ACL
+
+### Run PSA-eBPF
+
+
 
 ### 05. Comparison with other host-based P4 platforms (latency)
 

@@ -330,7 +330,7 @@ Replace `<SCRIPT>` with:
 - `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/lpm` to test LPM match. Use `runtime_cmd/04_tables/lpm/1000-entries-10-prefixes` to test scenario with 10 LPM prefixes. 
 - `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/ternary` to test ternary match. Use `runtime_cmd/04_tables/ternary/1000-entries-10-masks` to test scenario with 10 ternary masks.  
 
-### 05. Comparison with other host-based P4 platforms
+### 05. Comparison with other host-based P4 platforms (throughput)
 
 #### Run BMv2 (L2FWD only)
 
@@ -365,6 +365,19 @@ $ ./scripts/dpdk_pipeline_send_cmd < <RUNTIME_CMD>
 Replace `<RUNTIME_CMD>` with:
 - `runtime_cmd/05_p4_targets/dpdk_upf/dpdk_upf_dl.txt` for UPF (encap)
 - `runtime_cmd/05_p4_targets/dpdk_upf/dpdk_upf_ul.txt` for UPF (decap)
+
+### 05. Comparison with other host-based P4 platforms (latency)
+
+#### Run P4-DPDK
+
+Use `setup_test.sh` in the same way as for the previous scenario. However, to make latency measurements reasonable, modify TX burst size of DPDK ports. To do that, modify `setup_test.sh` as follows:
+
+```
+pipeline PIPELINE0 port in 0 link LINK0 rxq 0 bsz 32
+pipeline PIPELINE0 port in 1 link LINK1 rxq 0 bsz 32
+pipeline PIPELINE0 port out 0 link LINK0 txq 0 bsz 1
+pipeline PIPELINE0 port out 1 link LINK1 txq 0 bsz 1
+```
 
 ### 06. Comparison with other software switches (throughput)
 

@@ -355,6 +355,8 @@ $ sudo -E ./setup_test.sh -C 6 --target p4-dpdk -E env/pllab.env <PROGRAM>
 Replace `<PROGRAM>` with:
 - `p4testdata/05_p4_targets/l2fwd.p4` for L2FWD
 - `p4testdata/05_p4_targets/upf_dpdk.p4` for UPF
+- `p4testdata/05_p4_targets/l2l3_acl_simple.p4` for L2L3-ACL
+- `p4testdata/05_p4_targets/bng_dpdk.p4` for BNG
 
 P4-DPDK uses `telnet` to install table entries. After running `setup_test.sh`, install table entries for P4-DPDK using:
 
@@ -365,6 +367,8 @@ $ ./scripts/dpdk_pipeline_send_cmd < <RUNTIME_CMD>
 Replace `<RUNTIME_CMD>` with:
 - `runtime_cmd/05_p4_targets/dpdk_upf/dpdk_upf_dl.txt` for UPF (encap)
 - `runtime_cmd/05_p4_targets/dpdk_upf/dpdk_upf_ul.txt` for UPF (decap)
+- `runtime_cmd/05_p4_targets/dpdk_bng_dl.txt` for BNG (encap)
+- `runtime_cmd/05_p4_targets/dpdk_bng_ul.txt` for BNG (decap)
 
 ### 05. Comparison with other host-based P4 platforms (latency)
 

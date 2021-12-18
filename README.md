@@ -350,6 +350,8 @@ Replace `<PROGRAM>` with:
 $ sudo -E ./setup_test.sh -C 6 --target p4-dpdk -E env/pllab.env <PROGRAM>
 ```
 
+> **Note!** We observed occasional failures due to `Error: Connectivity initialization failed (0)`. In that case, retry running `setup_test.sh`
+
 Replace `<PROGRAM>` with:
 - `p4testdata/05_p4_targets/l2fwd.p4` for L2FWD
 - `p4testdata/05_p4_targets/upf_dpdk.p4` for UPF

@@ -1,2 +1,1 @@
-match 0x0000000c action far_forward dest 0x02
 match 0x0000000d action far_encap_forward dest 0x00 teid 0x000010e1 gtpu_remote_ip 0xac141063 gtpu_local_ip 0xac141069 

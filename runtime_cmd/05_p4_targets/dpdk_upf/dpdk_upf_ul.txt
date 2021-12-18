@@ -1,0 +1,6 @@
+pipeline PIPELINE0 table source_interface_lookup_by_port add runtime_cmd/05_p4_targets/dpdk_upf/ul/source_interface_lookup_by_port.txt
+pipeline PIPELINE0 table ipv4_lpm add runtime_cmd/05_p4_targets/dpdk_upf/ul/ipv4_lpm.txt
+pipeline PIPELINE0 table session_lookup_by_teid add runtime_cmd/05_p4_targets/dpdk_upf/ul/session_lookup_by_teid.txt
+pipeline PIPELINE0 table pdr_lookup add runtime_cmd/05_p4_targets/dpdk_upf/ul/pdr_lookup.txt
+pipeline PIPELINE0 table far_lookup add runtime_cmd/05_p4_targets/dpdk_upf/ul/far_lookup.txt
+pipeline PIPELINE0 commit

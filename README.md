@@ -70,6 +70,12 @@ default_hugepagesz=1G hugepagesz=1G hugepages=32 transparent_hugepage=never
 cat /sys/class/net/ens3f0/device/numa_node
 ```
 
+### Prerequisites
+
+```
+$ sudo apt install -y expect wait-for-it
+```
+
 ### Build PSA-eBPF
 
 Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf-psa) repository to install PSA-eBPF on DUT machine. 

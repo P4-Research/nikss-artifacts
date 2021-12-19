@@ -136,7 +136,7 @@ function dpdk_init_pipeline() {
   # demonise our dpdk-pipeline process
   CORE_OPTION=""
   if [ ! -z "$CORE" ]; then
-    high_val=$(($CORE + 3))
+    high_val=$(($CORE + 1))
     CORE_OPTION="-l $CORE-$high_val"
   fi
   thread_core=$(($CORE + 1))

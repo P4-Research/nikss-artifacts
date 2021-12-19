@@ -8,4 +8,4 @@ psabpf-ctl table add pipe 99 ingress_tbl_switching id 1 key $GENERATOR_MAC1 0 da
 
 psabpf-ctl table add pipe 99 ingress_tbl_acl id 0 key 16.0.0.1 48.0.0.1 17 1025 12
 
-psabpf-ctl table add pipe 99 egress_tbl_vlan_egress id 1 key $PORT1_INDEX
+psabpf-ctl table add pipe 99 ingress_tbl_vlan_egress id 1 key $PORT1_INDEX

@@ -178,7 +178,7 @@ if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   fi
 elif [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
-  $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" --arch psa -o out.spec "$PROGRAM"
+  $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" "-DP4DPDK"  --arch psa -o out.spec "$PROGRAM"
   exit_on_error
   dpdk_init_pipeline
   echo "Installing table entries.. Looking for $COMMANDS_FILE"

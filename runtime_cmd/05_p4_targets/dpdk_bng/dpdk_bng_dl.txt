@@ -1,0 +1,15 @@
+# Downlink
+pipeline PIPELINE0 table ingress_port_vlan add runtime_cmd/05_p4_targets/dpdk_bng/dl/ingress_port_vlan.txt
+pipeline PIPELINE0 table egress_vlan add runtime_cmd/05_p4_targets/dpdk_bng/dl/egress_vlan.txt
+
+pipeline PIPELINE0 table fwd_classifier add runtime_cmd/05_p4_targets/dpdk_bng/dl/fwd_classifier.txt
+pipeline PIPELINE0 table routing_v4 add runtime_cmd/05_p4_targets/dpdk_bng/dl/routing_v4.txt
+pipeline PIPELINE0 table next_vlan add runtime_cmd/05_p4_targets/dpdk_bng/dl/next_vlan.txt
+pipeline PIPELINE0 table t_line_map add runtime_cmd/05_p4_targets/dpdk_bng/dl/t_line_map.txt
+pipeline PIPELINE0 table t_line_session_map add runtime_cmd/05_p4_targets/dpdk_bng/dl/t_line_session_map.txt
+
+# high value; don't limit rate
+pipeline PIPELINE0 meter profile platinum add cir 46000000 pir 138000000 cbs 1000000 pbs 1000000
+pipeline PIPELINE0 meter m_besteff from 0 to 100 set profile platinum
+
+pipeline PIPELINE0 commit

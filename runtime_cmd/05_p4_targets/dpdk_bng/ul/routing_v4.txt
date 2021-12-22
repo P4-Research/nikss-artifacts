@@ -1,0 +1,1 @@
+match 0xC0A80200/0xFFFFFF00 action route port_num 1 smac 0x00110a69e775 dmac 0x00110a69e601

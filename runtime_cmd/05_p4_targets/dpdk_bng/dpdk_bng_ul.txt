@@ -1,0 +1,10 @@
+pipeline PIPELINE0 table ingress_port_vlan add runtime_cmd/05_p4_targets/dpdk_bng/ul/ingress_port_vlan.txt
+pipeline PIPELINE0 table egress_vlan add runtime_cmd/05_p4_targets/dpdk_bng/ul/egress_vlan.txt
+
+pipeline PIPELINE0 table fwd_classifier add runtime_cmd/05_p4_targets/dpdk_bng/ul/fwd_classifier.txt
+pipeline PIPELINE0 table routing_v4 add runtime_cmd/05_p4_targets/dpdk_bng/ul/routing_v4.txt
+pipeline PIPELINE0 table next_vlan add runtime_cmd/05_p4_targets/dpdk_bng/ul/next_vlan.txt
+pipeline PIPELINE0 table t_line_map add runtime_cmd/05_p4_targets/dpdk_bng/ul/t_line_map.txt
+pipeline PIPELINE0 table t_pppoe_term_v4 add runtime_cmd/05_p4_targets/dpdk_bng/ul/t_pppoe_term_v4.txt
+
+pipeline PIPELINE0 commit

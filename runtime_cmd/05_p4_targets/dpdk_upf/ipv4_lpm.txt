@@ -1,2 +1,0 @@
-match  0x02 0/0 action forward srcAddr $DUT_MAC1 dstAddr $GENERATOR_MAC1  port 1
-match  0x00 0xAC141063/0xFFFFFFFF action forward srcAddr $DUT_MAC0  dstAddr $GENERATOR_MAC0  port 0

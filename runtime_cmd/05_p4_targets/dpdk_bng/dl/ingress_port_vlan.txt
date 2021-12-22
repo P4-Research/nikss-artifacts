@@ -1,0 +1,1 @@
+match 0 0/0 0/0 action permit_with_internal_vlan vlan_id 3 port_type 1  

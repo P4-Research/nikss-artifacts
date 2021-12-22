@@ -1,0 +1,6 @@
+pipeline PIPELINE0 table tbl_ingress_vlan add runtime_cmd/05_p4_targets/dpdk_l2l3/ingress_vlan_latency.txt
+pipeline PIPELINE0 table tbl_routable add runtime_cmd/05_p4_targets/dpdk_l2l3/routable.txt
+pipeline PIPELINE0 table tbl_routing add runtime_cmd/05_p4_targets/dpdk_l2l3/routing_latency.txt
+pipeline PIPELINE0 table tbl_switching add runtime_cmd/05_p4_targets/dpdk_l2l3/switching_latency.txt
+pipeline PIPELINE0 table tbl_vlan_egress add runtime_cmd/05_p4_targets/dpdk_l2l3/egress_vlan_latency.txt
+pipeline PIPELINE0 commit

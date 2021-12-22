@@ -1,2 +1,1 @@
 match 0x0000000000000000 0x0a0a0a0a/0xffffffff 0/0 0/0 0/0 0/0 0x00 action set_far_id far_id 0x0000000c 
-match 0x0000000000000000 0/0 0x0a0a0a0a/0xffffffff 0/0 0/0 0/0 0x02 action set_far_id far_id 0x0000000d

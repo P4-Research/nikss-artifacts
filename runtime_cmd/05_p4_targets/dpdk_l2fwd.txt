@@ -1,0 +1,2 @@
+pipeline PIPELINE0 table tbl_fwd add runtime_cmd/05_p4_targets/dpdk_l2fwd/fwd.txt
+pipeline PIPELINE0 commit

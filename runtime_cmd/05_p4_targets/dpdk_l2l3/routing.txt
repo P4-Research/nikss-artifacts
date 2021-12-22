@@ -1,0 +1,1 @@
+match 0x30000000/0xFFFFFF00 action set_nexthop smac 0x00110a69e774 dmac 0x00110a69e601 vlan_id 0x0000

@@ -1,0 +1,2 @@
+match 0x00110a69e601 0 action forward output_port 1
+match 0x00110a69e600 0 action forward output_port 0

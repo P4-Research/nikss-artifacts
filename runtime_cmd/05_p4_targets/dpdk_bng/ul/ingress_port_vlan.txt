@@ -1,0 +1,1 @@
+match 0 0/0 0/0 action permit port_type 1

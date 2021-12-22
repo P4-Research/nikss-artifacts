@@ -128,26 +128,33 @@ declare -a RECIRC_PORT_ID=$(ip -o link | awk '$2 == "psa_recirc:" {print $1}' | 
 declare -a ARGS="-DPSA_PORT_RECIRCULATE=$RECIRC_PORT_ID"
 
 function dpdk_init_pipeline() {
+  $DPDK_REPO/usertools/dpdk-devbind.py -u $PORT0_PCI_DEV
+  $DPDK_REPO/usertools/dpdk-devbind.py -u $PORT1_PCI_DEV
+  $DPDK_REPO/usertools/dpdk-devbind.py --bind=uio_pci_generic $PORT0_PCI_DEV
+  $DPDK_REPO/usertools/dpdk-devbind.py --bind=uio_pci_generic $PORT1_PCI_DEV
   echo "Running dpdk-pipeline, assuming that PCI devices $PORT0_PCI_DEV and $PORT1_PCI_DEV are bound to right driver"
   # demonise our dpdk-pipeline process
   CORE_OPTION=""
   if [ ! -z "$CORE" ]; then
-    CORE_OPTION="-l $CORE"
+    high_val=$(($CORE + 1))
+    CORE_OPTION="-l $CORE-$high_val"
   fi
-  nohup $DPDK_PIPELINE_BIN $CORE_OPTION -a "$PORT0_PCI_DEV" -a "$PORT1_PCI_DEV" &
+  thread_core=$(($CORE + 1))
+  nohup $DPDK_REPO/build/examples/dpdk-pipeline $CORE_OPTION -a "$PORT0_PCI_DEV" -a "$PORT1_PCI_DEV" &
   # wait-for-it will crash dpdk-pipeline, so use sleep
   sleep 5
   echo "Initializing pipeline..."
   ./scripts/dpdk_pipeline_send_cmd << EOC
 mempool MEMPOOL0 buffer 2304 pool 32K cache 256 cpu 1
-link LINK0 dev $PORT0_PCI_DEV rxq $NUM_QUEUES 2048 MEMPOOL0 txq $NUM_QUEUES 1024 promiscuous on
-link LINK1 dev $PORT1_PCI_DEV rxq $NUM_QUEUES 2048 MEMPOOL0 txq $NUM_QUEUES 1024 promiscuous on
+link LINK0 dev $PORT0_PCI_DEV rxq $NUM_QUEUES 4096 MEMPOOL0 txq $NUM_QUEUES 4096 promiscuous on
+link LINK1 dev $PORT1_PCI_DEV rxq $NUM_QUEUES 4096 MEMPOOL0 txq $NUM_QUEUES 4096 promiscuous on
 pipeline PIPELINE0 create 0
 pipeline PIPELINE0 port in 0 link LINK0 rxq 0 bsz 32
 pipeline PIPELINE0 port in 1 link LINK1 rxq 0 bsz 32
 pipeline PIPELINE0 port out 0 link LINK0 txq 0 bsz 32
 pipeline PIPELINE0 port out 1 link LINK1 txq 0 bsz 32
 pipeline PIPELINE0 build out.spec
+thread $thread_core pipeline PIPELINE0 enable
 EOC
   echo ""
 }
@@ -171,7 +178,7 @@ if [[ $PROGRAM == *.p4 && $TARGET == "bmv2-psa" ]]; then
   fi
 elif [[ $PROGRAM == *.p4 && $TARGET == "p4-dpdk" ]]; then
   echo "Compiling data plane program.. $PROGRAM"
-  $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" --arch psa -o out.spec "$PROGRAM"
+  $P4C_DPDK_BIN $P4ARGS "-I$UPSTREAM_P4C_REPO/p4include/dpdk" "-DP4DPDK"  --arch psa -o out.spec "$PROGRAM"
   exit_on_error
   dpdk_init_pipeline
   echo "Installing table entries.. Looking for $COMMANDS_FILE"

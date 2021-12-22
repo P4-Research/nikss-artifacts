@@ -12,7 +12,14 @@ Steps to follow to prepare the generator machine.
 
 ### Configure TRex
 
-### Run netperf
+Use the below script to setup DPDK ports for TRex.
+
+```
+$ cd trex/v2.92/
+$ sudo ./dpdk_setup_ports.py -i
+```
+
+### Run netperf (obsolete, we use TRex with HDRHistogram for latency measurements)
 
 Before using netperf, make sure that all interfaces are managed by Linux driver back:
 
@@ -141,26 +148,10 @@ We use `setup_test.sh` script to automatically deploy test configurations.
 
 Before running the script you should prepare the environment file based on the template provided under `env/` directory.
 
-The basic usage of `setup_test.sh` is as follows:
+To check the basic usage of `setup_test.sh` run:
 
 ```
 $ ./setup_test.sh --help
-Run benchmark tests for PSA-eBPF.
-The script will configure and deploy the PSA-eBPF setup for benchmarking.
-
-Syntax: ./setup_test.sh [OPTIONS] [PROGRAM]
-
-Example: ./setup_test.sh -E env_file -c commands.txt testdata/l2fwd.p4
-
-OPTIONS:
--E|--env          File with environment variables for DUT.
--c|--cmd           Path to the file containing runtime configuration for P4 tables/BPF maps.
--q|--queues        Set number of RX/TX queues per NIC (default 1).
--C|--core          CPU core that will be pinned to interfaces.
---p4args           P4ARGS for PSA-eBPF.
---help             Print this message.
-
-PROGRAM:           P4 file (will be compiled by PSA-eBPF and then clang) or C file (will be compiled just by clang). (mandatory)
 ```
 
 ### 01. Packet forwarding rate
@@ -170,57 +161,57 @@ Run PSA-eBPF.
 - L2FWD program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/00_warmup/l2fwd.txt p4testdata/00_warmup/l2fwd.p4
 ```
 
 - L2L3-ACL program and routing rules on DUT machine: 
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ```
 
 - BNG (encap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_dl.txt p4testdata/01_use_cases/bng.p4
 ```
 
 - BNG (decap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_ul.txt p4testdata/01_use_cases/bng.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/bng_ul.txt p4testdata/01_use_cases/bng.p4
 ```
 
 - UPF (encap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_dl.txt p4testdata/01_use_cases/upf.p4
 ```
 
 - UPF (decap) program on DUT machine:
 
 ```
-sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_ul.txt p4testdata/01_use_cases/upf.p4
+sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/01_use_cases/upf_ul.txt p4testdata/01_use_cases/upf.p4
 ```
 
 
 #### Run TRex
 
-For each program, run the NDR script and tune `size=` parameter accordingly (use 64, 128, 256, 512, 1024, 1518 packet sizes).
+For each program, run the NDR script and tune `size=`/`packet_len=` parameter accordingly (use 128, 256, 512, 1024, 1518 packet sizes).
 
 ```
-./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE> --prof-tun size=X  --verbose
+./ndr --stl --port 0 1 --max-iterations 20 -t 60 --pdr <PDR> --pdr-error 0.05 -o hu --force-map <TREX_ARGS> --verbose
 ```
 
-`<PROFILE>` values:
+`<TREX_ARGS>` values:
 - for UPF: 
-  - uplink: `--profile trex_scripts/upf_ul.py`
-  - downlink: `--profile stl/bench.py`
+  - uplink: `--profile trex_scripts/upf_ul.py --prof-tun packet_len=X`
+  - downlink: `--profile stl/bench.py --prof-tun packet_len=X` (due to MTU limit set `packet_len` to 1472 instead of 1512)
 - for L2L3-ACL: `--profile trex_scripts/udp_1flow.py --prof-tun packet_len=X`
 - for BNG:
-  - uplink: `--profile trex_scripts/bng_ul.py`
-  - downlink: `--profile stl/bench.py`
-- for L2FWD: `--profile stl/bench.py`
+  - uplink: `--profile trex_scripts/bng_ul.py --prof-tun packet_len=X`
+  - downlink: `--profile stl/bench.py --prof-tun packet_len=X` (due to MTU limit set `packet_len` to 1496 instead of 1512)
+- for L2FWD: `--profile stl/bench.py --prof-tun --size=X`
 
 
 ### 02. End-to-end performance
@@ -228,7 +219,7 @@ For each program, run the NDR script and tune `size=` parameter accordingly (use
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> --p4args <P4ARGS> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 --target psa-ebpf -E <ENV-FILE> --p4args <P4ARGS> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replacements:
@@ -244,7 +235,7 @@ Enabling optimizations:
 
 #### Generator
 
-`$ ./ndr --stl --port 0 1 --max-iterations 20 -t 60  --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile <PROFILE>`
+`$ ./ndr --stl --port 0 1 --max-iterations 20 -t 60  --pdr <PDR> --pdr-error 0.05 -o hu --force-map --profile <PROFILE>`
 
 `<PROFILE>` values:
 - for UPF: 
@@ -296,7 +287,7 @@ To get the CPU cycles per packet, divide `cycles` by `run_cnt`.
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Run the script for each P4 program located under `p4testadata/03_psa_externs/`. Replace `<P4-PROGRAM>` with the path to a given P4 program (e.g. `p4testdata/03_psa_externs/action-selector.p4` to test the ActionSelector extern). 
@@ -321,7 +312,7 @@ On the Generator machine the below command to test each P4 program:
 #### DUT
 
 ```
-$ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 11" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
+$ sudo -E ./setup_test.sh -C 6 --target psa-ebpf --p4args "--xdp --pipeline-opt --hdr2Map --max-ternary-masks 11" -E <ENV-FILE> -c <SCRIPT> <P4-PROGRAM>
 ```
 
 Replace `<P4-PROGRAM>` with: 
@@ -380,18 +371,21 @@ Replace `<RUNTIME_CMD>` with:
 
 ### Run PSA-eBPF
 
+TBD
 
 ### 05. Comparison with other host-based P4 platforms (latency)
 
-#### Run P4-DPDK
+#### Run P4-DPDK and PSA-eBPF
 
-Use `setup_test.sh` in the same way as for the previous scenario. However, to make latency measurements reasonable, modify TX burst size of DPDK ports. To do that, modify `setup_test.sh` as follows:
+Use `setup_test.sh` in the same way as for the previous scenario.
+
+#### Run TRex 
+
+Run TRex with `--hdrh` flag and use the Python script from trex_scripts as follows:
 
 ```
-pipeline PIPELINE0 port in 0 link LINK0 rxq 0 bsz 32
-pipeline PIPELINE0 port in 1 link LINK1 rxq 0 bsz 32
-pipeline PIPELINE0 port out 0 link LINK0 txq 0 bsz 1
-pipeline PIPELINE0 port out 1 link LINK1 txq 0 bsz 1
+$ sudo ./t-rex -c <CORE> -i --hdrh
+$ 
 ```
 
 ### 06. Comparison with other software switches (throughput)

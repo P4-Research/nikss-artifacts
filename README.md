@@ -19,6 +19,12 @@ $ cd trex/v2.92/
 $ sudo ./dpdk_setup_ports.py -i
 ```
 
+You will also need `HDRHistorgram` library for latency measurements:
+
+```
+$ pip install hdrhistogram
+```
+
 ### Run netperf (obsolete, we use TRex with HDRHistogram for latency measurements)
 
 Before using netperf, make sure that all interfaces are managed by Linux driver back:
@@ -385,7 +391,7 @@ Run TRex with `--hdrh` flag and use the Python script from trex_scripts as follo
 
 ```
 $ sudo ./t-rex -c <CORE> -i --hdrh
-$ 
+$ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ python ./psa-ebpf-artifacts/trex_scripts/l2l3_latency.py
 ```
 
 ### 06. Comparison with other software switches (throughput)
@@ -475,15 +481,17 @@ $ sudo -E ./setup_test.sh -C 6 -E <ENV-FILE> -c runtime_cmd/06_software_switchin
 $ sudo -E ./setup_test.sh -C 6 -E env/pllab.env -c runtime_cmd/06_software_switching/ebpf_l2l3_latency.txt ebpf/l2l3_acl.c
 ```
 
-#### Run Netperf
+#### Run TRex 
 
-On Generator machine:
+Run TRex with `--hdrh` flag and use the Python script from trex_scripts as follows:
 
 ```
-$ sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -l 180 -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
+$ sudo ./t-rex -c <CORE> -i --hdrh
+$ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ python ./psa-ebpf-artifacts/trex_scripts/l2l3_latency.py
 ```
 
-### 07. Multi-queue scaling
+
+### 07. Multi-queue scaling (extra)
 
 #### Run PSA-eBPF
 

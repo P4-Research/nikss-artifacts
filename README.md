@@ -498,9 +498,15 @@ $ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ pyth
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
 
 ```
-$ sudo -E ./setup_test.sh --queues 2 -C 6-11,18-23 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
+$ sudo -E ./setup_test.sh --p4args "--xdp --hdr2Map --max-ternary-masks 3 --pipeline-opt" --target psa-ebpf --queues N -C 6-11 -E <ENV-FILE> -c runtime_cmd/01_use_cases/l2l3_acl_routing.txt p4testdata/01_use_cases/l2l3_acl.p4
 ``` 
 
 #### Run TRex
+
+Replace X with 64 or 1508. 
+
+```
+$ ./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr 0.1 --pdr-error 0.05 -o hu --force-map --profile stl/bench.py --prof-tun size=X,vm=tuple --verbose
+```
 
 

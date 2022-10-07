@@ -1,5 +1,25 @@
 # PSA-eBPF artifacts
 
+This repository contains scripts for the CoNEXT'22 artifact evaluation of paper entitled "A novel programmable software datapath for Software-Defined Networking". The scripts in this repository can be used to produce the performance data (throughput, latency, CPU cycles, number of instructions) for the following figures:
+* Figure 3: Packet forwarding rate of NIKSS-TC (left) and NIKSS-XDP (right) with only pipeline-aware optimization enabled for different packet sizes
+* Figure 4: The cost of different P4 match kinds measured in the throughput rate and average CPU cycles per packet over a baseline depending on the number of table entries.
+* Figure 5: The cost of PSA externs measured in average CPU cycles per packet over a baseline program
+* Figure 6: The throughput of test programs  and latency distribution by percentiles for L2L3-ACL and 0.8 MPPS of the offered load (right) for NIKSS and P4- DPDK.
+* Figure 7: The throughput of test programs and latency distribution by percentiles for L2L3-ACL and 0.8 MPPS of the offered load for kernel datapaths.
+
+## Hardware dependencies
+
+The tests require two machine connected back-to-back: the Generator machine and the Switch Under Test (SUT) machine.  The two machines should be equipped with a NIC with at least 2 ports available and with support for DPDK and XDP in native mode.
+
+## Software dependencies
+
+The tests we done on Ubuntu 20.04 with installed kernel 5.11.3. The main software requirements are as follows:
+* Linux kernel >=5.8
+* TRex >=2.92
+* clang 10 
+* bpftool
+* DPDK 21.11.0
+
 ## Topology
 
 TBD
@@ -23,28 +43,6 @@ You will also need `HDRHistorgram` library for latency measurements:
 
 ```
 $ pip install hdrhistogram
-```
-
-### Run netperf (obsolete, we use TRex with HDRHistogram for latency measurements)
-
-Before using netperf, make sure that all interfaces are managed by Linux driver back:
-
-```
-$ cd trex/v2.92/
-$ sudo ./dpdk_setup_ports.py -L
-```
-
-In order to make Netperf traffic traverse the DUT machine, we have to set up the Linux namespaces, so that packets will leave
-local host. Use the following script to automatically setup Linux namespaces:
-
-```
-$ sudo ./scripts/setup_netperf.sh
-```
-
-Then, to run Netperf test:
-
-```
-sudo ip netns exec netperf-client netperf -H 10.0.0.2 -p 5555 -t TCP_RR -l 180 -- -o min_latency,max_latency,mean_latency,transaction_rate,p50_latency,p90_latency,p99_latency
 ```
 
 ## DUT machine
@@ -116,23 +114,6 @@ ninja -C build install
 ```
 Set the DPDK_PIPELINE_BIN environment variable to the absolute path of the dpdk-pipeline application.
 
-### Build BMv2
-
-To build and install BMv2 execute `script/setup_bmv2.sh` from directory where you want place source code (e.g. home directory).
-
-To build P4 compiler for BMv2 (if you build p4-dpdk before you can execute only last instruction from `build` directory):
-```shell
-git clone --recursive https://github.com/p4lang/p4c.git
-cd p4c
-mkdir build
-cd build
-cmake ..
-make "-j$(nproc)" p4c-bm2-psa
-```
-
-**Do not run** ***'make install'*** otherwise the previously installed PSA-EBPF compiler will be overwritten.
-
-Set the `UPSTREAM_P4C_REPO` environment variable to the absolute path of the p4c repository.
 
 ### Build OVS
 
@@ -334,18 +315,6 @@ Replace `<SCRIPT>` with:
 - `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/ternary` to test ternary match. Use `runtime_cmd/04_tables/ternary/1000-entries-10-masks` to test scenario with 10 ternary masks.  
 
 ### 05. Comparison with other host-based P4 platforms (throughput)
-
-#### Run BMv2 (L2FWD only)
-
-```
-$ sudo -E ./setup_test.sh --target bmv2-psa -C 6 -E <ENV-FILE> -c <SCRIPT> <PROGRAM>
-```
-
-Replace `<SCRIPT>` with:
-- `runtime_cmd/05_p4_targets/bmv2_l2fwd.txt` for L2FWD
-
-Replace `<PROGRAM>` with:
-- `p4testdata/05_p4_targets/l2fwd.p4` for L2FWD
 
 #### Run P4-DPDK
 

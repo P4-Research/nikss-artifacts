@@ -1,4 +1,4 @@
-# PSA-eBPF artifacts
+# NIKSS artifact
 
 This repository contains scripts for the CoNEXT'22 artifact evaluation of paper entitled "A novel programmable software datapath for Software-Defined Networking". The scripts in this repository can be used to produce the performance data (throughput, latency, CPU cycles, number of instructions) for the following figures:
 * Figure 3: Packet forwarding rate of NIKSS-TC (left) and NIKSS-XDP (right) with only pipeline-aware optimization enabled for different packet sizes
@@ -51,7 +51,7 @@ Steps to follow to prepare the DUT machine.
 
 ### Hardware settings & OS configuration
 
-In order to make tests as stable and reproducible as possible and to minimize interference from system activity, the following configuration was done. Note that the same configuration is used for both PSA-eBPF in-kernel tests and P4-dpdk userspace tests. All our tests we done with DUT kernel version v5.11.3.
+In order to make tests as stable and reproducible as possible and to minimize interference from system activity, the following configuration was done. Note that the same configuration is used for both NIKSS in-kernel tests and P4-dpdk userspace tests. All our tests we done with DUT kernel version v5.11.3.
 -  Disable HyperThreading
 -  Disable Turbo Boost, either from UEFI/BIOS or as follows (assuming `intel_pstate` is enabled):
 ```
@@ -87,13 +87,13 @@ cat /sys/class/net/ens3f0/device/numa_node
 $ sudo apt install -y expect wait-for-it
 ```
 
-### Build PSA-eBPF
+### Build NIKSS
 
 Make sure this repository has been cloned recursivly. Otherwise invoke:
 ```
 git submodule update --init --recursive
 ```
-Go to the p4c-ebpf-psa directory andf follow the steps in the README to install PSA-eBPF on DUT machine. 
+Go to the p4c-ebpf-psa directory andf follow the steps in the README to install NIKSS on DUT machine. 
 
 ### Build P4-DPDK
 
@@ -147,7 +147,7 @@ $ ./setup_test.sh --help
 
 ### 01. Packet forwarding rate
 
-Run PSA-eBPF.
+Run NIKSS.
 
 - L2FWD program on DUT machine:
 
@@ -354,7 +354,7 @@ TBD
 
 ### 05. Comparison with other host-based P4 platforms (latency)
 
-#### Run P4-DPDK and PSA-eBPF
+#### Run P4-DPDK and NIKSS
 
 Use `setup_test.sh` in the same way as for the previous scenario.
 
@@ -369,7 +369,7 @@ $ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ pyth
 
 ### 06. Comparison with other software switches (throughput)
 
-#### Run PSA-eBPF
+#### Run NIKSS
 
 ```
 $ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3 --xdp --pipeline-opt --table-caching" -E <ENV-FILE> -c <RUNTIME_CMD> <P4-PROGRAM>
@@ -430,13 +430,13 @@ Replace `<PROFILE>` with:
 
 ### 06. Comparison with other software switches (latency)
 
-#### Run PSA-eBPF (TC)
+#### Run NIKSS (TC)
 
 ```
 $ sudo -E ./setup_test.sh -C 6 --p4args "--hdr2Map --max-ternary-masks 3" -E <ENV-FILE> -c runtime_cmd/06_software_switching/l2l3_acl_latency.txt p4testdata/06_software_switching/l2l3_acl_simple.p4
 ```
 
-#### Run PSA-eBPF (XDP)
+#### Run NIKSS (XDP)
 
 ```
 $ sudo -E ./setup_test.sh -C 6 --p4args "--xdp --hdr2Map --max-ternary-masks 3 --pipeline-opt" -E <ENV-FILE> -c runtime_cmd/06_software_switching/l2l3_acl_latency.txt p4testdata/06_software_switching/l2l3_acl_simple.p4
@@ -466,7 +466,7 @@ $ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ pyth
 
 ### 07. Multi-queue scaling (extra)
 
-#### Run PSA-eBPF
+#### Run NIKSS
 
 Assuming that isolated CPU cores on the NIC's NUMA node are within the range of 6-11,18-23, tune `--queues N` parameter to set a desired number of RX/TX queues per NIC. 
 

@@ -2,6 +2,7 @@
 
 This repository contains scripts for the CoNEXT'22 artifact evaluation of paper entitled "A novel programmable software datapath for Software-Defined Networking". The scripts in this repository can be used to produce the performance data (throughput, latency, CPU cycles, number of instructions) for the following figures:
 * Figure 3: Packet forwarding rate of NIKSS-TC (left) and NIKSS-XDP (right) with only pipeline-aware optimization enabled for different packet sizes
+* Table 2: The in-depth performance analysis of test programs
 * Figure 4: The cost of different P4 match kinds measured in the throughput rate and average CPU cycles per packet over a baseline depending on the number of table entries.
 * Figure 5: The cost of PSA externs measured in average CPU cycles per packet over a baseline program
 * Figure 6: The throughput of test programs  and latency distribution by percentiles for L2L3-ACL and 0.8 MPPS of the offered load (right) for NIKSS and P4- DPDK.
@@ -9,7 +10,7 @@ This repository contains scripts for the CoNEXT'22 artifact evaluation of paper 
 
 ## Hardware dependencies
 
-The tests require two machine connected back-to-back: the Generator machine and the Switch Under Test (SUT) machine.  The two machines should be equipped with a NIC with at least 2 ports available and with support for DPDK and XDP in native mode.
+The tests require two machine connected back-to-back: the Generator machine and the Device Under Test (DUT) machine.  The two machines should be equipped with a NIC with at least 2 ports available and with support for DPDK and XDP in native mode.
 
 ## Software dependencies
 
@@ -19,10 +20,6 @@ The tests we done on Ubuntu 20.04 with installed kernel 5.11.3. The main softwar
 * clang 10 
 * bpftool
 * DPDK 21.11.0
-
-## Topology
-
-TBD
 
 ## Generator machine
 
@@ -145,7 +142,7 @@ To check the basic usage of `setup_test.sh` run:
 $ ./setup_test.sh --help
 ```
 
-### 01. Packet forwarding rate
+### 01. Packet forwarding rate (figure 3)
 
 Run NIKSS.
 
@@ -205,7 +202,7 @@ For each program, run the NDR script and tune `size=`/`packet_len=` parameter ac
 - for L2FWD: `--profile stl/bench.py --prof-tun --size=X`
 
 
-### 02. End-to-end performance
+### 02. End-to-end performance (table 2)
 
 #### DUT
 
@@ -273,7 +270,7 @@ $ sudo bpftool prog profile id 6953 cycles
 
 To get the CPU cycles per packet, divide `cycles` by `run_cnt`. 
 
-### 03. Microbenchmarking: the cost of PSA externs
+### 03. Microbenchmarking: the cost of PSA externs (figure 5)
 
 #### DUT
 
@@ -298,7 +295,7 @@ On the Generator machine the below command to test each P4 program:
 ./ndr --stl --port 0 1 --max-iterations 20 --iter-time 60 --pdr <PDR> --pdr-error <PDR-ERROR> -o hu --force-map --profile stl/bench.py --prof-tun size=64  --verbose
 ```
 
-### 04. Microbenchmarking: P4 Table lookup time
+### 04. Microbenchmarking: P4 Table lookup time (figure 4)
 
 #### DUT
 
@@ -318,7 +315,7 @@ Replace `<SCRIPT>` with:
 - `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/lpm` to test LPM match. Use `runtime_cmd/04_tables/lpm/1000-entries-10-prefixes` to test scenario with 10 LPM prefixes. 
 - `X-entries` (replace X with number of entries) under `runtime_cmd/04_tables/ternary` to test ternary match. Use `runtime_cmd/04_tables/ternary/1000-entries-10-masks` to test scenario with 10 ternary masks.  
 
-### 05. Comparison with other host-based P4 platforms (throughput)
+### 05. Comparison with other host-based P4 platforms (throughput, figure 6)
 
 #### Run P4-DPDK
 
@@ -352,7 +349,7 @@ Replace `<RUNTIME_CMD>` with:
 
 TBD
 
-### 05. Comparison with other host-based P4 platforms (latency)
+### 05. Comparison with other host-based P4 platforms (latency, figure 6)
 
 #### Run P4-DPDK and NIKSS
 
@@ -367,7 +364,7 @@ $ sudo ./t-rex -c <CORE> -i --hdrh
 $ PYTHONPATH=./automation/trex_control_plane/interactive/trex/examples/stl/ python ./psa-ebpf-artifacts/trex_scripts/l2l3_latency.py
 ```
 
-### 06. Comparison with other software switches (throughput)
+### 06. Comparison with other software switches (throughput, figure 7)
 
 #### Run NIKSS
 
@@ -428,7 +425,7 @@ Replace `<PROFILE>` with:
 - `stl/bench.py` for L2FWD and VXLAN (encap)
 - `trex_scripts/udp_1flow.py` for L2L3-ACL
 
-### 06. Comparison with other software switches (latency)
+### 06. Comparison with other software switches (latency, figure 7)
 
 #### Run NIKSS (TC)
 

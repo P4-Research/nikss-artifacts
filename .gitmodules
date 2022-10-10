@@ -1,0 +1,4 @@
+[submodule "p4c-ebpf-psa"]
+	path = p4c-ebpf-psa
+	url = https://github.com/P4-Research/p4c-ebpf-psa.git
+	branch = paper-sigcomm-2022

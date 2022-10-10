@@ -89,7 +89,11 @@ $ sudo apt install -y expect wait-for-it
 
 ### Build PSA-eBPF
 
-Follow the steps from the [psa-ebpf-psa](https://github.com/P4-Research/p4c-ebpf-psa) repository to install PSA-eBPF on DUT machine. 
+Make sure this repository has been cloned recursivly. Otherwise invoke:
+```
+git submodule update --init --recursive
+```
+Go to the p4c-ebpf-psa directory andf follow the steps in the README to install PSA-eBPF on DUT machine. 
 
 ### Build P4-DPDK
 

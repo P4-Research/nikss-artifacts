@@ -8,6 +8,11 @@ This repository contains scripts for the CoNEXT'22 artifact evaluation of paper 
 * Figure 6: The throughput of test programs  and latency distribution by percentiles for L2L3-ACL and 0.8 MPPS of the offered load (right) for NIKSS and P4- DPDK.
 * Figure 7: The throughput of test programs and latency distribution by percentiles for L2L3-ACL and 0.8 MPPS of the offered load for kernel datapaths.
 
+The `results/` directory contains Excel files that can be used to calculate end results and generate plots (plot.xslx). 
+
+> NOTE: Originally, we used Google Sheets to calculate results, but we converted them to XSLX files. If you meet issues with Excel files, please use Sheets files [[link](https://drive.google.com/drive/folders/1L0RbuOE3CkqqAHmcYW66-tz3b1M58TNB?usp=sharing)] as a backup.
+> plots.xslx is originally an Excel file and you should not expect issues when generating plots.
+
 ## Hardware dependencies
 
 The tests require two machine connected back-to-back: the Generator machine and the Device Under Test (DUT) machine.  The two machines should be equipped with a NIC with at least 2 ports available and with support for DPDK and XDP in native mode.
